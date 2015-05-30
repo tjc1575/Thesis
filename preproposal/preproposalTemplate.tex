@@ -1,0 +1,34 @@
+\documentclass[11pt]{artikel3}
+\usepackage{fullpage, setspace, graphicx}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+
+\title{RIT Department of Computer Science\\MSc Thesis Pre-Proposal:\\\emph{Generalized Model of Cognitive Workload}}
+\author{Student: Taylor Carpenter, Advisor: Dr. Zack Butler}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Problem}
+
+Human operators are commonly involved in complex systems. Similar to computers, humans have a limited amount of resources that can be dedicated towards a specific task. When the resources are under heavy load, or in the case of a person, when they are overworked mentally, suboptimal decisions and errors can occur. Unlike a computer system, however, methods for monitoring the working state of human operators have not been well developed. The cognitive workload of a person is more difficult to quantify than the stress on a computer. If a system can be developed to monitor the functional state of a person, load balancing methods can be used to transfer work to other human operators, or to autonomous systems through adaptive automation \cite{wilson_operator_2005}. Effective monitoring of cognitive workload could reduce overall system errors and remove unnecessary stress from operators.
+
+This study seeks to investigate the effectiveness of a generalized model of cognitive workload based on psychophysiological measures. In order for the model to be generalized, it shall be robust against differences between individuals and between the tasks being performed. Such a model may or may not be reasonably developed due to the complexity of the human mind.
+ 
+{\bf Related Work.}
+
+In existing work, a variety of machine learning techniques such as Artificial Neural Networks \cite{wilson_real-time_2003} and Support Vector Machines \cite{yin_operator_2014} have been used to establish cognitive workload models. However, much of the existing research focuses on classifiers that are trained and tested on a participant-by-participant basis using only a single complex task. This may be sufficient to test a classifier in a lab setting but shows little in the way of a realistic production system. It is unlikely that an organization will have the time to train a system on each individual for every task they will perform. Additionally, for some tasks it may be difficult to quantify the ground truth of the cognitive workload levels for which to train against. Few studies have been done that investigate cross-participant testing \cite{wang_cross-subject_2012} and cross-task testing \cite{ke_eeg-based_2014} and none were found that examine these two tasks together.
+
+\section{Methodology}
+
+The study will collect psychophysiological data from individuals performing a complex task using an Emotiv Epoc+ EEG headset and a Scoche Rhythm+ heart-rate monitor. The initial complex task to be used during data collection will be the Multi-Attribute Task Battery (MATB) \cite{miller_updated_2014}. Data will be collected from ten participants of varying age. For each participant, data from four trials; baseline, low, medium, high; will be collected and used as ground truth for training. The continuous EEG and heart-rate data will be segmented into 5 second intervals to create discrete data points for offline analysis. The following features will be calculated for each data point: raw EEG measures from the 14 EEG channels, EEG band information for each channel, task load indices, average heart rate, and heart rate variance. To reduce the number of features, primary component analysis may be used for feature selection. The machine learning techniques to be used include Artificial Neural Networks and Adaboost.
+
+\section{Evaluation}
+
+Due to the multi-faceted nature of the model, evaluation will be performed on individual components as well as the system as a whole. For each evaluation, the target of a particular data point will be the difficulty label of the trial from which the point was collected; i.e. baseline, low, medium, high. The recall, precision, and harmonic mean metrics will be calculated by comparing the predicted level of cognitive workload with the target. Evaluation will occur initially on a single task, single participant level to compare against existing classification methods. Next, evaluation will be done on a cross-participant, single task level to determine the effectiveness as participant generalization. Then evaluation will be done on a single-participant, cross-task level to determine task generalization. Finally, evaluation will be done on the full generalized model, i.e. cross-participant and cross-task. The model will be considered valid if higher than chance accuracy during the final, full generalized evaluation is observed, however comparable accuracy to existing methods is desired.
+
+\bibliographystyle{acm}
+\bibliography{preproposal}
+
+\end{document}
