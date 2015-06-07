@@ -1,0 +1,6 @@
+This repository serves as the saving point for ongoing thesis work.
+
+# Thesis
+## Generalized Model of Cognitive Workload
+#### Abstract
+Human operators are commonly involved in complex human-machine systems that are present in many industries. The topic of cognitive workload monitoring of system operators has been a popular focal point of many studies over the past few decades. The ability to determine the load of an individual performing a task would allow for a more in-depth analysis of how the task affects the operator and also more sophisticated adaptive automation. While cognitive workload estimators have been well explored, they are commonly individualized models that are restricted to a single task. Unfortunately, these models are of little use outside of a controlled lab setting as they require too much time to train and are too specific. In this thesis, we will explore the practicality of a generalized cognitive workload model. Using psychophysiological data collected from individuals as they perform two cognitive loading tasks at varying difficulty levels, a model will be trained independent of individual and task. The effectiveness of said model will be compared to existing, non-generalized models of cognitive workload.
