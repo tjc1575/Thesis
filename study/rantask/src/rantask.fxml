@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -11,9 +13,24 @@
 
 <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="600.0" spacing="10.0" style="-fx-background-color: gray;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
    <children>
-      <Button fx:id="low_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="401.0" prefWidth="215.0" text="Low Tone" HBox.hgrow="ALWAYS" />
-      <Button fx:id="medium_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="401.0" prefWidth="215.0" text="Medium Tone" HBox.hgrow="ALWAYS" />
-      <Button fx:id="high_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="401.0" prefWidth="215.0" text="High Tone" HBox.hgrow="ALWAYS" />
+      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="200.0" spacing="10.0">
+         <children>
+            <Circle fx:id="low_toggle" fill="WHITE" radius="34.0" stroke="BLACK" strokeType="INSIDE" />
+            <Button fx:id="low_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="401.0" prefWidth="200.0" text="Low Tone" />
+         </children>
+      </VBox>
+      <VBox alignment="CENTER" layoutX="35.0" layoutY="20.0" prefHeight="200.0" prefWidth="200.0" spacing="10.0">
+         <children>
+            <Circle fx:id="medium_toggle" fill="WHITE" radius="34.0" stroke="BLACK" strokeType="INSIDE" />
+            <Button fx:id="medium_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="400.0" prefWidth="200.0" text="Medium Tone" />
+         </children>
+      </VBox>
+      <VBox alignment="CENTER" layoutX="520.0" layoutY="20.0" prefHeight="200.0" prefWidth="200.0" spacing="10.0">
+         <children>
+            <Circle fx:id="high_toggle" fill="WHITE" radius="34.0" stroke="BLACK" strokeType="INSIDE" />
+            <Button fx:id="high_button" mnemonicParsing="false" onAction="#handleButtonAction" prefHeight="401.0" prefWidth="200.0" text="High Tone" />
+         </children>
+      </VBox>
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
