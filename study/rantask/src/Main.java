@@ -6,11 +6,6 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 
-import javax.sound.midi.MidiChannel;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Synthesizer;
-
 public class Main extends Application {
 
     Parent root;
@@ -25,6 +20,8 @@ public class Main extends Application {
         root = loader.load();
         controller = loader.getController();
         gen = new SoundGenerator();
+
+        processConfig();
         task = new TaskController(1,3,-1,30);
     }
 
@@ -46,6 +43,8 @@ public class Main extends Application {
 
     @Override
     public void stop() {
+        task.stop();
+
         Alert alert = new Alert( Alert.AlertType.INFORMATION );
         alert.setHeaderText("");
         alert.setContentText("Click 'OK' to exit.");
@@ -53,9 +52,21 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
+    private void processConfig() {
+
+    }
+
+    public static void usage() {
+        System.err.println( "Usage: java rantask subject_id config_file");
+    }
 
     public static void main(String[] args) {
+        if( args.length != 2 ) {
+            usage();
+            return;
+        }
 
+        Logger.setup();
         launch(args);
 
 

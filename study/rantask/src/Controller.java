@@ -85,15 +85,15 @@ public class Controller {
        if (event.getSource() == low_button) {
            task.buttonPressed(0);
            low_st.playFromStart();
-           System.out.println("Low");
+           Logger.println("Low");
        } else if (event.getSource() == medium_button) {
            task.buttonPressed(1);
            medium_st.playFromStart();
-           System.out.println("Medium");
+           Logger.println("Medium");
        } else if (event.getSource() == high_button) {
            task.buttonPressed(2);
            high_st.playFromStart();
-           System.out.println("High");
+           Logger.println("High");
        } else {
            System.err.println("Invalid button press");
        }

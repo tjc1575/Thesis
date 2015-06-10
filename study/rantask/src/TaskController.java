@@ -11,17 +11,20 @@ public class TaskController implements Runnable{
     private SoundGenerator gen;
     private int steps = 0;
 
-    int[] counts;
-    int[] desired;
-    int[] toneCount;
+    private int[] counts;
+    private int[] desired;
+    private int[] toneCount;
 
-    int totalTone = 0;
-    int totalPress = 0;
-    int correct = 0;
-    int falsePos = 0;
+    private int totalTone = 0;
+    private int totalPress = 0;
+    private int correct = 0;
+    private int falsePos = 0;
 
-    int lastTone;
-    int status;
+    private int lastTone;
+    private int status;
+
+    private boolean cont;
+
 
     public TaskController( int low, int medium, int high, int time ) {
         counts = new int[] {0,0,0};
@@ -35,7 +38,8 @@ public class TaskController implements Runnable{
     }
 
     public void run() {
-        for( int step = 0; step < steps; step++ ) {
+        cont = true;
+        for( int step = 0; step < steps && cont; step++ ) { // Note the two part conditional
             status = 0;
             int tone = ran.nextInt(3);
             lastTone = tone;
@@ -102,10 +106,16 @@ public class TaskController implements Runnable{
         return value;
     }
 
+    public void stop() {
+        if( cont ) {
+            cont = false;
+        }
+    }
+
     private void writeLog() {
         System.out.print( "[" +getCount(0) +", " + getCount(1) + ", " + getCount(2) +"]," );
         System.out.print( lastTone + ", " );
-        System.out.println(status );
+        System.out.println( status );
     }
 
 }
