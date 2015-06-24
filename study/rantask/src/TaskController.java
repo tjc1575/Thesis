@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 /**
@@ -27,8 +28,12 @@ public class TaskController implements Runnable{
 
 
     public TaskController( int low, int medium, int high, int time ) {
+        int newLow = low == 0 ? -1 : low;
+        int newMed = medium == 0 ? -1 : medium;
+        int newHigh = high == 0 ? -1 : high;
+
         counts = new int[] {0,0,0};
-        desired = new int[] {low, medium, high};
+        desired = new int[] {newLow, newMed, newHigh};
         toneCount = new int[] {0,0,0};
         ran = new Random();
         gen = new SoundGenerator();
@@ -70,7 +75,11 @@ public class TaskController implements Runnable{
         }
         gen.shutdown();
 
-        System.out.println( toneCount[0] + ", " + toneCount[1] + ", " + toneCount[2] );
+        Logger.println( "Tone 1 count: " + toneCount[0]);
+        Logger.println( "Tone 2 count: " + toneCount[1]);
+        Logger.println( "Tone 3 count: " + toneCount[2]);
+
+        Logger.println( "Correct: " + correct + "; False Positive: " + falsePos );
         Platform.exit();
     }
 
@@ -113,9 +122,11 @@ public class TaskController implements Runnable{
     }
 
     private void writeLog() {
-        System.out.print( "[" +getCount(0) +", " + getCount(1) + ", " + getCount(2) +"]," );
-        System.out.print( lastTone + ", " );
-        System.out.println( status );
+        Logger.print(LocalDateTime.now().toLocalTime().toString() + ":   ");
+
+        Logger.print("[" + getCount(0) + ", " + getCount(1) + ", " + getCount(2) + "],");
+        Logger.print(lastTone + ", ");
+        Logger.println(Integer.toString(status));
     }
 
 }

@@ -12,6 +12,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
+import java.time.LocalDateTime;
+
 
 public class Controller {
     @FXML
@@ -82,6 +84,7 @@ public class Controller {
 
    @FXML
     protected void handleButtonAction(ActionEvent event) {
+       Logger.print(LocalDateTime.now().toLocalTime().toString() + ":   ");
        if (event.getSource() == low_button) {
            task.buttonPressed(0);
            low_st.playFromStart();
