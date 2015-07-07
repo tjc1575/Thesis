@@ -9,7 +9,7 @@
 """
 
 from argparse import ArgumentParser
-from os import path, walk, makedirs
+from os import path, makedirs
 from os.path import basename, normpath, splitext
 from matlab.engine import start_matlab
 from datetime import *
@@ -83,7 +83,7 @@ def preprocessEEG( inputFilename, outputDirectory, startTime, intervalSize, tria
 	mkdir_p( outputDirectory ) # create directory structure to allow for file creation if necessary
 	
 	parsedFilename = parseAndRemoveBaseline( inputFilename, outputDirectory )
-	data = readChannelFiles_Offset( parsedFilename )
+	data = readChannelFile_Offset( parsedFilename )
 	
 	# Pull clean filename, i.e. no extension or leading directories, of EEG file
 	entryName, _ = splitext( basename( normpath(inputFilename) ) )
@@ -117,7 +117,7 @@ def parseAndRemoveBaseline( inputFilename, outputDirectory ):
 	
 	return outputFilename
 	
-def readChannelFiles_Offset( filename ):
+def readChannelFile_Offset( filename ):
 	"""
 		Read in a tab-separated text file containing EEG information separated by channel. This
 		version handles reading the file where time entry is an offset from a start time
@@ -191,7 +191,10 @@ def partitionEEG( data, startTime, intervalSize, trialLength):
 				end = addSecs( start, intervalSize )
 				interval = [  str(start.hour) + ':' + str(start.minute) + ':' + 
 					str(start.second) + ":" + str(start.microsecond)]
-					
+				
+				# Add the data point that triggered the transition to interval
+				interval.append( entry[1:])
+				
 	return partitionedData
 	
 def writeChannelData( partitionedData, outputDirectory ):
