@@ -1,0 +1,18 @@
+AF-MATB V. 3.03
+Programmed using MATLAB 7.5.0 and other Custom MATLAB Functions.
+
+William Daniel Miller, Jr.
+Air Force Research Laboratory
+711th Human Performance Wing
+Human Effectiveness Directorate
+Applied Neuroscience Branch
+
+Event Time	Gauge Number	Response Time	Event Timeout
+23.602475	1.000000	29.601888	33.596931	
+61.031897	1.000000	61.100435	71.062644	
+77.495612	1.000000	87.102958	87.496110	
+127.194887	1.000000	133.489044	137.191905	
+191.590240	1.000000	194.951886	201.587202	
+234.084283	1.000000	234.938413	244.084465	
+286.584190	1.000000	289.334051	296.585092	
+326.681623	1.000000	333.846798	336.681487	

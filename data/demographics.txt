@@ -1,0 +1,15 @@
+No hearing or visual impairments 
+
+With all 10:
+	Age Range: 18 - 23
+	Average Age: 20.8
+	Ratio: 3 M, 7 F
+
+Without Partials:
+	Age Range: 18 - 23
+	Average Age: 21.1
+	Ratio: 3 M, 4 F
+
+
+18, 22, 20, 20, 23, 22, 23, 19, 22, 19
+M, F, M, F, F, F, M, F, F, F

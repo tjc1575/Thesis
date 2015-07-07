@@ -1,0 +1,20 @@
+002-MATB,,,,,,,,
+,,,Condition / Trial,,,,,
+,Calibration Raw,Calibration Adjusted,Condition 1 - Trial 1,Condition 1 - Trial 2,Condition 2 - Trial 1,Condition 2 - Trial 2,Condition 3 - Trial 1,Condition 3 - Trial 2
+Mental ,3,0.2,1,1,3,9,12,13
+Physical,0,0,0,1,2,3,6,8
+Temporal,4,0.266666666666667,4,1,4,4,11,12
+Performance,5,0.333333333333333,1,1,6,5,8,9
+Effort,2,0.133333333333333,3,1,5,8,12,15
+Frustration,1,0.0666666666666667,0,1,1,2,10,11
+Total,15,1,10,5,22,28.6666666666667,51.3333333333333,57.6666666666667
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,
+,,,,,,,,

@@ -1,5 +1,10 @@
-/**
- * Created by tjc1575 on 6/17/15.
+/*
+    Filename: Demo.java
+    Author: Taylor Carpenter <tjc1575@rit.edu>
+
+    Demo for the auditory task to allow participants to become
+    familiar with the individual tones. Presents the tones in the
+    following order: low, medium, high, high, medium, low.
  */
 public class Demo {
     public static void main(String[] args) {

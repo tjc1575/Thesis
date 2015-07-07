@@ -1,0 +1,27 @@
+AF-MATB V. 3.03
+Programmed using MATLAB 7.5.0 and other Custom MATLAB Functions.
+
+William Daniel Miller, Jr.
+Air Force Research Laboratory
+711th Human Performance Wing
+Human Effectiveness Directorate
+Applied Neuroscience Branch
+
+Response Time	Gauge Number
+21.175619	1.000000	
+76.356222	1.000000	
+87.562421	1.000000	
+144.567348	1.000000	
+163.750574	1.000000	
+192.379257	1.000000	
+210.637274	1.000000	
+220.747551	1.000000	
+261.456800	1.000000	
+261.459310	2.000000	
+266.252174	1.000000	
+322.362646	1.000000	
+382.654116	1.000000	
+408.940248	1.000000	
+569.784888	1.000000	
+580.550325	1.000000	
+599.159518	1.000000	
