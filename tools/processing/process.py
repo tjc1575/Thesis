@@ -82,16 +82,26 @@ def process( directory, outputDirectory, eng = None ):
 	# Get a list of all the subdirectories
 	_, directories, _ = next( walk( directory ) )
 	
+	header = None
+	
 	# Process each subdirectory
 	for subDirectory in directories:
 		trialData = processDirectory( path.join(directory, subDirectory), 
 			outputDirectory, eng )
 		
+		# Pull header information 
+		if header == None:
+			header = trialData[0]
+		
 		# Add the data to the correct task, depending on directory name
+		# Do not add the first row since it is the header
 		if "matb" in subDirectory:
-			data["matb"].extend( trialData )
+			data["matb"].extend( trialData[1:] )
 		elif "rantask" in subDirectory:
-			data["rantask"].extend( trialData )
+			data["rantask"].extend( trialData[1:] )
+	
+	data['matb'].insert( 0, header )
+	data['rantask'].insert( 0, header )
 	
 	writeData( data['matb'], path.join( outputDirectory, 'matb_combined.txt' ) )
 	writeData( data['rantask'], path.join( outputDirectory, 'rantask_combined.txt' ) )
