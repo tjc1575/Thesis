@@ -2,15 +2,15 @@
 """
 	Filename: preprocessEEG.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Preprocess EEG files, transforming them from a single EDK file 
+	Preprocess EEG files, transforming them from a single EDF file 
 	to multiple tab-separated text files, one channel per file. Each 
 	line in a file consists of a timestamp and all data that falls within
 	the sample for the data point.
 """
 
 from argparse import ArgumentParser
-from os import path, makedirs
-from os.path import basename, normpath, splitext
+from os import path, makedirs, remove
+from os.path import basename, normpath, splitext, dirname, realpath
 from matlab.engine import start_matlab
 from datetime import *
 
@@ -66,24 +66,22 @@ def addSecs(tm, secs):
 	return fulldate.time()
 
 
-def preprocessEEG( inputFilename, outputDirectory, startTime, intervalSize, trialLength ):
+def preprocessEEG( inputFilename, outputDirectory, eng = None ):
 	"""
-		Preprocess the desired input EDK file into multiple channel files.
-		inputFilename defines the EEG EDK file to be processed.
-		outputDirectory is the location where temporary and final
-			result files will be written.
-		startTime is the time at which to start pulling samples ( allowing
-			for noise at the beginning to be trimmed ).
-		intervalSize is the number of seconds of data to be combined into a
-			single data point.
-		trialLength is the number of seconds the trial is, allowing for trailing
-			noise to be trimmed.
+		Preprocess the desired input EDF file into a more readable format
+		with absolute timestamps, rather than relative time offsets.
+		inputFilename defines the EEG EDF file to be processed.
+		A matlab engine can be passed in to cut down on processing time from
+		repeated tasks.
 	"""
 	
 	mkdir_p( outputDirectory ) # create directory structure to allow for file creation if necessary
 	
-	parsedFilename = parseAndRemoveBaseline( inputFilename, outputDirectory )
+	parsedFilename = parseAndRemoveBaseline( inputFilename, outputDirectory, eng )
 	data = readChannelFile_Offset( parsedFilename )
+	
+	# Remove the previously created temporary file as it has already been read and processed
+	remove( path.join( outputDirectory, "eeg_parsed.txt" ) )
 	
 	# Pull clean filename, i.e. no extension or leading directories, of EEG file
 	entryName, _ = splitext( basename( normpath(inputFilename) ) )
@@ -96,24 +94,33 @@ def preprocessEEG( inputFilename, outputDirectory, startTime, intervalSize, tria
 	entryTime = datetime.strptime( entryTimeStr, '%d.%m.%Y.%H.%M.%S' )
 	
 	timeExpansion( data, entryTime )
-	partitionedData = partitionEEG( data, startTime, intervalSize, trialLength )
-	
-	writeChannelData( partitionedData, outputDirectory )
+	return data
 	
 	
-def parseAndRemoveBaseline( inputFilename, outputDirectory ):
+def parseAndRemoveBaseline( inputFilename, outputDirectory, eng = None ):
 	"""
-		Parse the specified input EDK file, remove baseline, and write the
+		Parse the specified input EDF file, remove baseline, and write the
 		relevant channel data out to a tab-separated text file that can be more
-		easily read.
+		easily read. A matlab engine can be passed in to cut down on processing time.
 		Returns the name of the file the data was written to.
 	"""
 	
 	outputFilename = path.join( outputDirectory, "eeg_parsed.txt" )
+	existing = True
 	
-	eng = start_matlab()
+	if eng == None:
+		eng = start_matlab()
+		existing = False
+	
+	# Add the current directory to the matlab path so that the function can be found
+	eng.addpath( dirname(realpath(__file__)) )
+	
 	eng.ParseEEG( inputFilename, outputFilename, nargout=0)
-	eng.quit()
+	eng.clc(nargout = 0)
+	eng.clear(nargout = 0)
+	
+	if not existing:
+		eng.quit()
 	
 	return outputFilename
 	
@@ -146,7 +153,7 @@ def timeExpansion( data, collectionStart ):
 		data[index][0] =  ( str(cur_time.hour) + ':' + str(cur_time.minute) + ':' +
 					str(cur_time.second) + ":" + str(cur_time.microsecond) )
 	
-def partitionEEG( data, startTime, intervalSize, trialLength):
+def partitionEEG( data, startTime, intervalSize, trialLength ):
 	"""
 		Split data into 'intervalSize' segments, starting at 'startTime' and continuing for 'trialLength'
 		seconds. The return value is a 3D array organized by time-label, channel, and then value 
@@ -232,21 +239,3 @@ def writeChannelData( partitionedData, outputDirectory ):
 	# Close all the files
 	for fout in files:
 		fout.close()
-	
-	
-	
-def main():
-	parser = ArgumentParser()
-	parser.add_argument("inputFilename")
-	parser.add_argument("outputDirectory")
-	
-	args = parser.parse_args()
-	inputFilename = args.inputFilename
-	outputDirectory = args.outputDirectory
-	
-	dummyStartTime = datetime(100, 1, 1, 10, 21, 7).time()
-	
-	preprocessEEG( inputFilename, outputDirectory, dummyStartTime, 5, 600 )
-	
-if __name__ == "__main__":
-	main()

@@ -48,23 +48,14 @@ def addSecs(tm, secs):
 	fulldate = fulldate + timedelta(seconds=secs)
 	return fulldate
 
-def preprocessHR( inputFilename, outputDirectory, startTime, intervalSize, trialLength ):
+def preprocessHR( inputFilename ):
 	"""
-		Preprocess the desired input HR text file into a cleaner HR text file
-		inputFilename defines the HR text file to be processed.
-		outputDirectory is the location where final result files will be written.
-		startTime is the time at which to start pulling samples ( allowing
-			for noise at the beginning to be trimmed ).
-		intervalSize is the number of seconds of data to be combined into a
-			single data point.
-		trialLength is the number of seconds the trial is, allowing for trailing
-			noise to be trimmed.
+		Preprocess the desired input HR text file into a cleaner HR data
+		with interpolated data points for smoother data.
 	"""
 	data = readHRFile( inputFilename )
 	data = smooth( data )
-	
-	partitionedData = partitionHR( data, startTime, intervalSize, trialLength )
-	writeData( partitionedData, outputDirectory )
+	return data
 	
 def readHRFile( filename ):
 	"""
