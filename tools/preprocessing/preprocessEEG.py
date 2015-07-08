@@ -108,6 +108,7 @@ def parseAndRemoveBaseline( inputFilename, outputDirectory, eng = None ):
 	outputFilename = path.join( outputDirectory, "eeg_parsed.txt" )
 	existing = True
 	
+	# Create a matlab instance if one was not provided
 	if eng == None:
 		eng = start_matlab()
 		existing = False
@@ -119,6 +120,7 @@ def parseAndRemoveBaseline( inputFilename, outputDirectory, eng = None ):
 	eng.clc(nargout = 0)
 	eng.clear(nargout = 0)
 	
+	# Shutdown matlab if it was created here
 	if not existing:
 		eng.quit()
 	

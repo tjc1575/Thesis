@@ -35,7 +35,7 @@ def main():
 	# Start a matlab instance to speed up repeated processes
 	eng = start_matlab()
 
-	participantIds = [ '001', '002', '003', '004', '005', '006', '007', '008']
+	participantIds = [ '001', '002', '003', '004', '005', '006', '007']
 	for participantId in participantIds:
 		participantDir = path.join( directory, participantId )
 		preprocess( participantDir, outputDirectory, intervalSize, trialLength, eng )
