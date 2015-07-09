@@ -65,7 +65,6 @@ def main():
 			# Spin off a thread for the building
 			threads.append( BuilderThread( participantId + '-' + task, data[participantId][task], outputFilename ) )
 			threads[-1].start()
-			exit()
 		
 		# Wait for all threads to finish before starting the next task
 		for thread in threads:
