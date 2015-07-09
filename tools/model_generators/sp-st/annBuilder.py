@@ -56,7 +56,6 @@ def main():
 			processes.append( Process( target=tuneANN, 
 				args=( data[participantId][task], outputFilename ) ) )
 			processes[-1].start()
-			exit()
 		
 		# Wait for all threads to finish before starting the next task
 		for process in processes:
@@ -87,9 +86,9 @@ def tuneANN( data, outputFilename ):
 	bestModelPara = {}
 	bestModelPerf = { 'accuracy':0 }
 	
-	connRates = [ 0.7 ]#, 0.9, 1.0 ]
-	hidNodes = [ 72 ]#, 50, 35 ]
-	errors = [ 0.01 ]#, 0.001, 0.0005 ]
+	connRates = [ 0.7, 0.9, 1.0 ]
+	hidNodes = [ 72 , 50, 35 ]
+	errors = [ 0.01, 0.001, 0.0005 ]
 	
 	for connRate in connRates:
 		for hidNode in hidNodes:
