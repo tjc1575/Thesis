@@ -46,8 +46,9 @@ def main():
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
-	# Create a multicore processing pool with 8 processes
-	pool = Pool( processes = 8 )
+	# Create a multicore processing pool with 7 processes ( 7 so that one core stays free
+	# for system processes )
+	pool = Pool( processes = 7 )
 	
 	# Build models for participants in a task
 	for task in tasks:
@@ -164,6 +165,7 @@ def trainANN( features, labels, connRate, hidNodes, error, binary ):
 	# Print out two reports for every ANN
 	iterations_between_reports = 50000
 	
+	
 	# Binarize labels as it is necessary for ANN
 	labels = binary.fit_transform( labels )
 	
@@ -195,16 +197,15 @@ def evaluateANN( features, targets, ann, binary ):
 	# Classify each entry in annFeatures using the ann
 	output = []
 	for i in range(len(annFeatures)):
-	    result =  array( ann.run( annFeatures[i] ) )
-	    on = argmax(result)
-	    x = zeros((1,3))
-	    x[0,on] = 1
-	    output.append( x )
+		result =  array( ann.run( annFeatures[i] ) )
+		on = argmax(result)
+		x = zeros(3)
+		x[on] = 1
+		output.append( x )
 	
 	for i in range( len(output) ):
 		output[i] = binary.inverse_transform( output[i] )
 
-	
 	outputLabels = array( output )
 	accuracy = accuracy_score( targets, outputLabels )
 	
