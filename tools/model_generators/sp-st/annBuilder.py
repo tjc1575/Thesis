@@ -18,11 +18,11 @@ from os.path import dirname, realpath, basename, normpath
 from numpy import array, argmax, zeros
 from sklearn import cross_validation
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, classification_report
 
 from fann2 import libfann
 
-from multiprocessing import Process
+from multiprocessing.pool import Pool
 		
 def main():
 	"""
@@ -46,20 +46,20 @@ def main():
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
+	# Create a multicore processing pool with 8 processes
+	pool = Pool( processes = 8 )
+	
 	# Build models for participants in a task
 	for task in tasks:
-		processes = []
 		for participantId in participantIds:
 			outputFilename = path.join( outputDirectory, participantId + '-' + task + '.txt' )
 			
 			# Spin off a process for the building
-			processes.append( Process( target=tuneANN, 
-				args=( data[participantId][task], outputFilename ) ) )
-			processes[-1].start()
-		
-		# Wait for all threads to finish before starting the next task
-		for process in processes:
-			process.join()
+			pool.apply_async( tuneANN, ( data[participantId][task], outputFilename ) )
+			
+	# Close down the pool so that we can wait on all the processes
+	pool.close()
+	pool.join()
 			
 	# Calculate and print the elapsed time
 	elapsed_time = time.time() - start_time
@@ -87,7 +87,7 @@ def tuneANN( data, outputFilename ):
 	bestModelPerf = { 'accuracy':0 }
 	
 	connRates = [ 0.7, 0.9, 1.0 ]
-	hidNodes = [ 72 , 50, 35 ]
+	hidNodes = [ 72 , 60, 40 ]
 	errors = [ 0.01, 0.001, 0.0005 ]
 	
 	for connRate in connRates:
@@ -102,9 +102,7 @@ def tuneANN( data, outputFilename ):
 
 					
 					bestModelPerf['accuracy'] = performance[0]
-					bestModelPerf['precision'] = performance[1]
-					bestModelPerf['recall'] = performance[2]
-					bestModelPerf['fmeasure'] = performance[3]
+					bestModelPerf['report'] = performance[1]
 	
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
@@ -122,9 +120,8 @@ def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 	binary = LabelBinarizer()
 	
 	accuracySum = 0
-	precisionSum = 0
-	recallSum = 0
-	fmeasureSum = 0
+	totalResults = []
+	totalTargets = []
 	
 	# For each k-fold split
 	for trainIndex, testIndex in skf:
@@ -136,14 +133,18 @@ def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 		ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )
 		
 		# Evaluate ANN on test data
-		accuracy, precision, recall, fmeasure = evaluateANN( featuresTest, labelsTest, ann, binary )
+		accuracy, outputLabels = evaluateANN( featuresTest, labelsTest, ann, binary )
 		
 		accuracySum += accuracy
-		precisionSum += precision
-		recallSum += recall
-		fmeasureSum += fmeasure
+		
+		# Store the results / targets for larger analysis
+		totalResults.extend( outputLabels.tolist() )
+		totalTargets.extend( labelsTest.tolist() )
+		
+	# Generate performance report
+	report = classification_report( totalTargets, totalResults, ['Low', 'Moderate', 'High'] )
 	
-	return ( accuracySum / 3.0, precisionSum / 3.0, recallSum / 3.0, fmeasureSum / 3.0 )
+	return ( accuracySum / 3.0, report )
 		
 		
 		
@@ -186,7 +187,7 @@ def trainANN( features, labels, connRate, hidNodes, error, binary ):
 def evaluateANN( features, targets, ann, binary ):
 	"""
 		Evaluate the ANN on the given test data. The accuracy of the model
-		as well as the average precision, recall, and fmeasure are returned.
+		is returned as well as the targets / pred for further analysis.
 	"""
 	
 	annFeatures = features.tolist()
@@ -206,11 +207,8 @@ def evaluateANN( features, targets, ann, binary ):
 	
 	outputLabels = array( output )
 	accuracy = accuracy_score( targets, outputLabels )
-	precision = precision_score( targets, outputLabels, average='macro' )
-	recall = recall_score( targets, outputLabels, average='macro' )
-	fmeasure = f1_score( targets, outputLabels, average='macro' )
 	
-	return accuracy, precision, recall, fmeasure
+	return accuracy, outputLabels
 		
 def writeData( parameters, performance, outputFilename ):
 	"""
@@ -221,9 +219,8 @@ def writeData( parameters, performance, outputFilename ):
 	with safe_open( outputFilename, 'w' ) as fout:
 		fout.write( "Performance:\n")
 		fout.write( "\tAccuracy: " + str( performance['accuracy'] ) + '\n' )
-		fout.write( "\tPrecision: " + str( performance['precision'] ) + '\n' )
-		fout.write( "\tRecall: " + str( performance['recall'] ) + '\n' )
-		fout.write( "\tF-Measure: " + str( performance['fmeasure'] ) + '\n' )
+		fout.write( "\n" )
+		fout.write( performance['report'] + '\n' )
 		
 		fout.write( '\n\n' )
 		
