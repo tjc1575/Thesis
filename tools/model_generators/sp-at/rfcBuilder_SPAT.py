@@ -40,12 +40,10 @@ def main():
 	tasks = [ 'matb', 'rantask' ]
 	participantIds = [ '001', '002', '003', '004', '005', '006', '007' ]
 	
-	# Combine task data into one dataset per participant
-	combinedData = { '001':[], '002':[], '003':[], '004':[], '005':[], '006':[], '007':[] }
+	# Cut off first row header for each data set
 	for task in tasks:
 		for participantId in participantIds:
-			# Cut off the first row since it is the header
-			combinedData[participantId].extend( data[participantId][task][1:] )
+			data[participantId][task] = data[participantId][task][1:] 
 		
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
@@ -53,13 +51,54 @@ def main():
 	# Build models for each participant
 	for participantId in participantIds:
 		outputFilename = path.join( outputDirectory, participantId + '.txt' )
-		tuneRFC( combinedData[task], outputFilename )
+		tuneRFC( data[participantId], outputFilename )
 			
 	# Calculate and print the elapsed time
 	elapsed_time = time.time() - start_time
 	print( "Elapsed time: " + str(elapsed_time) )
 		
+def compileData( features, labels ):
+	"""
+		Create 3 fold cross validation data for each
+		task and then combine them into one dataset
+	"""
+	# Create 3-fold cross validation indices for each task
+	skfList = []
+	for task, tLabels in labels.items():
+		skfList.append( cross_validation.StratifiedKFold( tLabels ) )
+		
+	# Combine fold data. Outer list is one for each fold, 
+	# each fold contains four lists, training features, training labels
+	# testing features, testing labels 
+	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
+		
+	index = 0
+	# Add matb data to the combined list
+	for trainIndex, testIndex in skfList[ 0 ]:
+		featuresTrain, featuresTest = features['matb'][trainIndex], features['matb'][testIndex]
+		labelsTrain, labelsTest = labels['matb'][trainIndex], labels['matb'][testIndex]
+		
+		combinedData[index][0] = featuresTrain
+		combinedData[index][1] = labelsTrain
+		combinedData[index][2] = featuresTest
+		combinedData[index][3] = labelsTest
+		
+		index += 1
 	
+	index = 0
+	# Add rantask data to the combined list	
+	for trainIndex, testIndex in skfList[ 1 ]:
+		featuresTrain, featuresTest = features['rantask'][trainIndex], features['rantask'][testIndex]
+		labelsTrain, labelsTest = labels['rantask'][trainIndex], labels['rantask'][testIndex]
+		
+		combinedData[index][0] = featuresTrain
+		combinedData[index][1] = labelsTrain
+		combinedData[index][2] = featuresTest
+		combinedData[index][3] = labelsTest
+		
+		index += 1
+		
+	return combinedData
 
 def tuneRFC( data, outputFilename ):
 	"""
@@ -69,9 +108,17 @@ def tuneRFC( data, outputFilename ):
 	"""
 	
 	# Cast to numpy array and split
-	npData = array( data )
-	features = npData[:,:-1].astype( np.float_ )
-	labels = npData[:,-1]
+	combinedFeatures = {}
+	combinedLabels = {}
+	
+	for task, tData in data.items():
+		npData = array( tData )
+		combinedFeatures[task] = npData[:,:-1].astype( np.float_ )
+		combinedLabels[task] = npData[:,-1]
+	
+	# Perform data combination and 3Fold splitting once for all parameters
+	# to save on computations
+	combinedData = compileData( combinedFeatures, combinedLabels )
 	
 	# Initialize max holder
 	bestModelPara = {}
@@ -82,7 +129,7 @@ def tuneRFC( data, outputFilename ):
 	
 	for numTree in numTrees:
 		for maxDepth in maxDepths:
-			performance = trainAndEvaluateRFC( features, labels, numTree, maxDepth )
+			performance = trainAndEvaluateRFC( combinedData, numTree, maxDepth )
 			if performance[0] > bestModelPerf['accuracy']:
 				bestModelPara['numTrees'] = numTree
 				bestModelPara['maxDepth'] = maxDepth
@@ -98,7 +145,7 @@ def tuneRFC( data, outputFilename ):
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
+def trainAndEvaluateRFC( combinedData, numTrees, maxDepth ):
 	"""
 		Train and evaluate a random forest classifier on the given features
 		with the given attributes. 3-fold cross-validation is used
@@ -106,8 +153,6 @@ def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
 		of all three folds is returned. 
 	"""
 	
-	# Create 3-fold cross validation indices
-	skf = cross_validation.StratifiedKFold( labels )
 	encoder = LabelEncoder()
 	
 	accuracySum = 0
@@ -115,15 +160,17 @@ def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
 	totalTargets = []
 	
 	# For each k-fold split
-	for trainIndex, testIndex in skf:
-		# Get data split
-		featuresTrain, featuresTest = features[trainIndex], features[testIndex]
-		labelsTrain, labelsTest = labels[trainIndex], labels[testIndex]
+	for split in combinedData:
 		
-		# Train the neural network
+		# Get data split
+		featuresTrain, featuresTest = split[0], split[2]
+		labelsTrain, labelsTest = split[1], split[3]
+		
+		
+		# Train the random forest
 		rfc = trainRFC( featuresTrain, labelsTrain, numTrees, maxDepth, encoder )
 		
-		# Evaluate ANN on test data
+		# Evaluate RFC on test data
 		accuracy, outputLabels = evaluateRFC( featuresTest, labelsTest, rfc, encoder )
 		
 		accuracySum += accuracy

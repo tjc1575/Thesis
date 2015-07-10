@@ -62,7 +62,7 @@ def main():
 		outputFilename = path.join( outputDirectory, participantId + '.txt' )
 		
 		# Spin off a process for the building
-		pool.apply_async( tuneANN, ( combinedData[task], outputFilename ) )
+		pool.apply_async( tuneANN, ( combinedData[participantId], outputFilename ) )
 			
 	# Close down the pool so that we can wait on all the processes
 	pool.close()
