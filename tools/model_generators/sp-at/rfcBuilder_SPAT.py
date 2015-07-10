@@ -62,10 +62,14 @@ def compileData( features, labels ):
 		Create 3 fold cross validation data for each
 		task and then combine them into one dataset
 	"""
+	
+	# Sort keys to ensure they are in the same order every run
+	tasks = sorted(list(labels.keys()))
+	
 	# Create 3-fold cross validation indices for each task
 	skfList = []
-	for task, tLabels in labels.items():
-		skfList.append( cross_validation.StratifiedKFold( tLabels ) )
+	for task in tasks:
+		skfList.append( cross_validation.StratifiedKFold( labels[task] ) )
 		
 	# Combine fold data. Outer list is one for each fold, 
 	# each fold contains four lists, training features, training labels
@@ -73,10 +77,11 @@ def compileData( features, labels ):
 	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
 		
 	index = 0
-	# Add matb data to the combined list
+	# Add task 1 data to the combined list
+	task = tasks[0]
 	for trainIndex, testIndex in skfList[ 0 ]:
-		featuresTrain, featuresTest = features['matb'][trainIndex], features['matb'][testIndex]
-		labelsTrain, labelsTest = labels['matb'][trainIndex], labels['matb'][testIndex]
+		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
+		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
 		
 		combinedData[index][0] = featuresTrain
 		combinedData[index][1] = labelsTrain
@@ -86,10 +91,11 @@ def compileData( features, labels ):
 		index += 1
 	
 	index = 0
-	# Add rantask data to the combined list	
+	# Add task 2 data to the combined list	
+	task = tasks[1]
 	for trainIndex, testIndex in skfList[ 1 ]:
-		featuresTrain, featuresTest = features['rantask'][trainIndex], features['rantask'][testIndex]
-		labelsTrain, labelsTest = labels['rantask'][trainIndex], labels['rantask'][testIndex]
+		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
+		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
 		
 		combinedData[index][0] = featuresTrain
 		combinedData[index][1] = labelsTrain

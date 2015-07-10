@@ -64,21 +64,24 @@ def compileData( features, labels ):
 		Create 3 fold cross validation data for each
 		participant and then combine them into one dataset
 	"""
+	
+	# Sort keys to ensure they are in the same order every run
+	participantIds = sorted(list(labels.keys()))
+	
 	# Create 3-fold cross validation indices for each participant
 	skfList = []
-	for participant, pLabels in labels.items():
-		skfList.append( cross_validation.StratifiedKFold( pLabels ) )
+	for participantId in participantIds:
+		skfList.append( cross_validation.StratifiedKFold( labels[participantId] ) )
 		
 	# Combine fold data. Outer list is one for each fold, 
 	# each fold contains four lists, training features, training labels
 	# testing features, testing labels 
 	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
 		
-	participantList = list(labels.keys())
 	
 	# Initialize the combinedData list with data from the first participant
 	index = 0
-	pId = participantList[0]
+	pId = participantIds[0]
 	for trainIndex, testIndex in skfList[ 0 ]:
 		featuresTrain, featuresTest = features[pId][trainIndex], features[pId][testIndex]
 		labelsTrain, labelsTest = labels[pId][trainIndex], labels[pId][testIndex]
@@ -91,9 +94,9 @@ def compileData( features, labels ):
 		index += 1
 	
 	# Append the data from the rest of the participants
-	for pIndex in range( 1, len( participantList ) ):
+	for pIndex in range( 1, len( participantIds ) ):
 		index = 0
-		pId = participantList[pIndex]
+		pId = participantIds[pIndex]
 		for trainIndex, testIndex in skfList[ pIndex ]:
 			featuresTrain, featuresTest = features[pId][trainIndex], features[pId][testIndex]
 			labelsTrain, labelsTest = labels[pId][trainIndex], labels[pId][testIndex]
