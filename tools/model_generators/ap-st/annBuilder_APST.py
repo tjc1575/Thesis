@@ -1,8 +1,8 @@
 #!/usr/local/bin/python3
 """
-	Filename: annBuilder.py
+	Filename: annBuilder_APST.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate neural network models for the same participant, same 
+	Generate neural network models for the all participants, same 
 	task setup.
 """
 import pickle
@@ -43,6 +43,13 @@ def main():
 	tasks = [ 'matb', 'rantask' ]
 	participantIds = [ '001', '002', '003', '004', '005', '006', '007' ]
 	
+	# Combine participant data into one dataset per task
+	combinedData = { 'matb':[], 'rantask':[] }
+	for task in tasks:
+		for participantId in participantIds:
+			# Cut off the first row since it is the header
+			combinedData[task].extend( data[participantId][task][1:] )
+	
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
@@ -52,11 +59,10 @@ def main():
 	
 	# Build models for participants in a task
 	for task in tasks:
-		for participantId in participantIds:
-			outputFilename = path.join( outputDirectory, participantId + '-' + task + '.txt' )
-			
-			# Spin off a process for the building
-			pool.apply_async( tuneANN, ( data[participantId][task], outputFilename ) )
+		outputFilename = path.join( outputDirectory, task + '.txt' )
+		
+		# Spin off a process for the building
+		pool.apply_async( tuneANN, ( combinedData[task], outputFilename ) )
 			
 	# Close down the pool so that we can wait on all the processes
 	pool.close()
@@ -74,9 +80,6 @@ def tuneANN( data, outputFilename ):
 		writing the most successful model information out to the 
 		specified file
 	"""
-	
-	# Cut off header information
-	data = data[1:]
 	
 	# Cast to numpy array and split
 	npData = array( data )
@@ -112,7 +115,7 @@ def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 	"""
 		Train and evaluate a neural network on the given features
 		with the given attributes. 3-fold cross-validation is used
-		one each run, the average accuracy, precision, recall, and fmeasure
+		on each run, the average accuracy, precision, recall, and fmeasure
 		of all three folds is returned. 
 	"""
 	

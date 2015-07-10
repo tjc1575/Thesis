@@ -1,11 +1,10 @@
 #!/usr/local/bin/python3
 """
-	Filename: rfcBuilder.py
+	Filename: annBuilder_SPST.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate random forest classifier models for the same participant, same 
+	Generate neural network models for the same participant, same 
 	task setup.
 """
-
 import pickle
 import errno
 import time
@@ -18,9 +17,12 @@ from os.path import dirname, realpath, basename, normpath
 
 from numpy import array, argmax, zeros
 from sklearn import cross_validation
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.ensemble import RandomForestClassifier
+
+from fann2 import libfann
+
+from multiprocessing.pool import Pool
 		
 def main():
 	"""
@@ -44,24 +46,33 @@ def main():
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
+	# Create a multicore processing pool with 7 processes ( 7 so that one core stays free
+	# for system processes )
+	pool = Pool( processes = 7 )
+	
 	# Build models for participants in a task
 	for task in tasks:
 		for participantId in participantIds:
 			outputFilename = path.join( outputDirectory, participantId + '-' + task + '.txt' )
 			
-			tuneRFC( data[participantId][task], outputFilename )
+			# Spin off a process for the building
+			pool.apply_async( tuneANN, ( data[participantId][task], outputFilename ) )
 			
+	# Close down the pool so that we can wait on all the processes
+	pool.close()
+	pool.join()
+	
 	# Calculate and print the elapsed time
 	elapsed_time = time.time() - start_time
 	print( "Elapsed time: " + str(elapsed_time) )
 		
 	
 
-def tuneRFC( data, outputFilename ):
+def tuneANN( data, outputFilename ):
 	"""
-		Tune random forest classifier using grid search across the 
-		various parameter options, writing the most successful model information 
-		out to the specified file
+		Tune ANN using grid search across the various parameter options,
+		writing the most successful model information out to the 
+		specified file
 	"""
 	
 	# Cut off header information
@@ -76,38 +87,38 @@ def tuneRFC( data, outputFilename ):
 	bestModelPara = {}
 	bestModelPerf = { 'accuracy':0 }
 	
-	numTrees = [ 150, 300, 500, 750, 1000 ]
-	maxDepths = [ 100, 200, 300, 400, 500 ]
+	connRates = [ 0.7, 0.9, 1.0 ]
+	hidNodes = [ 72 , 60, 40 ]
+	errors = [ 0.01, 0.001, 0.0005 ]
 	
-	for numTree in numTrees:
-		for maxDepth in maxDepths:
-			performance = trainAndEvaluateRFC( features, labels, numTree, maxDepth )
-			if performance[0] > bestModelPerf['accuracy']:
-				bestModelPara['numTrees'] = numTree
-				bestModelPara['maxDepth'] = maxDepth
+	for connRate in connRates:
+		for hidNode in hidNodes:
+			for error in errors:
+				performance = trainAndEvaluateANN( features, labels, connRate,
+					hidNode, error )
+				if performance[0] > bestModelPerf['accuracy']:
+					bestModelPara['connRate'] = connRate
+					bestModelPara['hidNode'] = hidNode
+					bestModelPara['error'] = error
 
-				
-				bestModelPerf['accuracy'] = performance[0]
-				bestModelPerf['report'] = performance[1]
-			
-			# Print a dot each time a cycle has finished for a visualization that
-			# it has not hung.
-			print('.')
+					
+					bestModelPerf['accuracy'] = performance[0]
+					bestModelPerf['report'] = performance[1]
 	
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
+def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 	"""
-		Train and evaluate a random forest classifier on the given features
+		Train and evaluate a neural network on the given features
 		with the given attributes. 3-fold cross-validation is used
-		one each run, the average accuracy, precision, recall, and fmeasure
+		on each run, the average accuracy, precision, recall, and fmeasure
 		of all three folds is returned. 
 	"""
 	
 	# Create 3-fold cross validation indices
 	skf = cross_validation.StratifiedKFold( labels )
-	encoder = LabelEncoder()
+	binary = LabelBinarizer()
 	
 	accuracySum = 0
 	totalResults = []
@@ -120,10 +131,10 @@ def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
 		labelsTrain, labelsTest = labels[trainIndex], labels[testIndex]
 		
 		# Train the neural network
-		rfc = trainRFC( featuresTrain, labelsTrain, numTrees, maxDepth, encoder )
+		ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )
 		
 		# Evaluate ANN on test data
-		accuracy, outputLabels = evaluateRFC( featuresTest, labelsTest, rfc, encoder )
+		accuracy, outputLabels = evaluateANN( featuresTest, labelsTest, ann, binary )
 		
 		accuracySum += accuracy
 		
@@ -138,39 +149,60 @@ def trainAndEvaluateRFC( features, labels, numTrees, maxDepth ):
 		
 		
 		
-def trainRFC( features, labels, numTrees, maxDepth, encoder ):
+def trainANN( features, labels, connRate, hidNodes, error, binary ):
 	"""
-		Train the random forest using the given training data and 
-		parameters. Returns a fully trained random forest.
+		Train the neural network using the given training data and 
+		parameters. Returns a fully trained ANN.
 	"""
+	# Organize ANN parameters
+	connection_rate = connRate
+	num_input = 72
+	num_hidden = hidNodes
+	num_output = 3
+	desired_error = error
+	max_iterations = 100000
 	
-	# Binarize labels
-	labels = encoder.fit_transform( labels )
+	# Print out two reports for every ANN
+	iterations_between_reports = 50000
+	
+	
+	# Binarize labels as it is necessary for ANN
+	labels = binary.fit_transform( labels )
 	
 	# Cast numpy to python list
-	rfcFeatures = features.tolist()
-	rfcLabels = labels.tolist()
+	annFeatures = features.tolist()
+	annLabels = labels.tolist()
 	
-	# Create the random forest, parallelizing across 7 jobs
-	rfc = RandomForestClassifier( n_estimators=numTrees, max_depth=maxDepth, n_jobs=7 )
+	# Create an ANN training data instance and set data
+	training = libfann.training_data()
+	training.set_train_data( annFeatures, annLabels )
 	
-	# Train the RFC
-	rfc.fit( rfcFeatures, rfcLabels )
+	ann = libfann.neural_net()
 	
-	return rfc
+	ann.create_sparse_array( connection_rate, (num_input, num_hidden, num_output) )
 	
-def evaluateRFC( features, targets, rfc, encoder ):
+	# Train the ANN
+	ann.train_on_data( training, max_iterations, iterations_between_reports, desired_error )
+	
+	return ann
+	
+def evaluateANN( features, targets, ann, binary ):
 	"""
-		Evaluate the RFC on the given test data. The accuracy of the model
+		Evaluate the ANN on the given test data. The accuracy of the model
 		is returned as well as the targets / pred for further analysis.
 	"""
 	
-	rfcFeatures = features.tolist()
+	annFeatures = features.tolist()
 	
-	# Classify each entry in rfcFeatures using the rfc
-	output = rfc.predict( rfcFeatures )
+	# Classify each entry in annFeatures using the ann
+	output = []
+	for i in range(len(annFeatures)):
+		result =  ann.run( annFeatures[i] )
+		output.append( result )
 		
-	outputLabels = encoder.inverse_transform( output )
+	output = array( output )
+	outputLabels = binary.inverse_transform( output )
+	
 
 	accuracy = accuracy_score( targets, outputLabels )
 	
@@ -191,9 +223,9 @@ def writeData( parameters, performance, outputFilename ):
 		fout.write( '\n\n' )
 		
 		fout.write( "Parameters:\n")
-		fout.write( "\tNumber of Trees: " + str( parameters['numTrees'] ) + '\n' )
-		fout.write( "\tMax Depth: " + str( parameters['maxDepth'] ) + '\n' )
-
+		fout.write( "\tConnection Rate: " + str( parameters['connRate'] ) + '\n' )
+		fout.write( "\tHidden Layer Nodes: " + str( parameters['hidNode'] ) + '\n' )
+		fout.write( "\tDesired Error Rate: " + str( parameters['error'] ) + '\n' )
 		
 # Taken from http://stackoverflow.com/a/600612/119527
 def mkdir_p(filepath):
