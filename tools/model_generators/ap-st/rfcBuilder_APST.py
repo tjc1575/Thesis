@@ -77,8 +77,8 @@ def tuneRFC( data, outputFilename ):
 	bestModelPara = {}
 	bestModelPerf = { 'accuracy':0 }
 	
-	numTrees = [ 150, 300, 500, 750, 1000, 1500, 2000 ]
-	maxDepths = [ 50, 100, 200, 300, 400, 500, 600, 700, 800 ]
+	numTrees = [ 750, 1000, 1500, 2000, 3000, 4000, 5000 ]
+	maxDepths = [ 300, 400, 500, 600, 700, 800, 900, 1000 ]
 	
 	for numTree in numTrees:
 		for maxDepth in maxDepths:
