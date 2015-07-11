@@ -1,8 +1,8 @@
 #!/usr/local/bin/python3
 """
-	Filename: rfcBuilder_SPAT.py
+	Filename: rfcBuilder_APAT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate random forest classifier models for the same participant, all 
+	Generate random forest classifier models for the all participant, all 
 	task setup.
 """
 
@@ -48,10 +48,8 @@ def main():
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
-	# Build models for each participant
-	for participantId in participantIds:
-		outputFilename = path.join( outputDirectory, participantId + '.txt' )
-		tuneRFC( data[participantId], outputFilename )
+	outputFilename = path.join( outputDirectory, 'all.txt' )
+	tuneRFC( data, outputFilename )
 			
 	# Calculate and print the elapsed time
 	elapsed_time = time.time() - start_time
@@ -60,28 +58,34 @@ def main():
 def compileData( features, labels ):
 	"""
 		Create 3 fold cross validation data for each
-		task and then combine them into one dataset
+		participant and each task and then combine them into one dataset
 	"""
 	
 	# Sort keys to ensure they are in the same order every run
-	tasks = sorted(list(labels.keys()))
+	participantIds = sorted(list(labels.keys()))
 	
-	# Create 3-fold cross validation indices for each task
-	skfList = []
-	for task in tasks:
-		skfList.append( cross_validation.StratifiedKFold( labels[task] ) )
+	# Create 3-fold cross validation indices for each participant for matb
+	skfListMATB = []
+	for participantId in participantIds:
+		skfListMATB.append( cross_validation.StratifiedKFold( labels[participantId]['matb'] ) )
+		
+	# Create 3-fold cross validation indices for each participant for rantask
+	skfListRantask = []
+	for participantId in participantIds:
+		skfListRantask.append( cross_validation.StratifiedKFold( labels[participantId]['rantask'] ) )
 		
 	# Combine fold data. Outer list is one for each fold, 
 	# each fold contains four lists, training features, training labels
 	# testing features, testing labels 
 	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
 		
+	
+	# Initialize the combinedData list with data from the first participant for matb
 	index = 0
-	# Add task 1 data to the combined list
-	task = tasks[0]
-	for trainIndex, testIndex in skfList[ 0 ]:
-		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
-		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
+	pId = participantIds[0]
+	for trainIndex, testIndex in skfListMATB[ 0 ]:
+		featuresTrain, featuresTest = features[pId]['matb'][trainIndex], features[pId]['matb'][testIndex]
+		labelsTrain, labelsTest = labels[pId]['matb'][trainIndex], labels[pId]['matb'][testIndex]
 		
 		combinedData[index][0] = featuresTrain
 		combinedData[index][1] = labelsTrain
@@ -90,19 +94,35 @@ def compileData( features, labels ):
 		
 		index += 1
 	
-	index = 0
-	# Add task 2 data to the combined list	
-	task = tasks[1]
-	for trainIndex, testIndex in skfList[ 1 ]:
-		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
-		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
-		
-		combinedData[index][0] = vstack((combinedData[index][0], featuresTrain ))
-		combinedData[index][1] = hstack((combinedData[index][1], labelsTrain ))
-		combinedData[index][2] = vstack((combinedData[index][2], featuresTest ))
-		combinedData[index][3] = hstack((combinedData[index][3], labelsTest ))
-		
-		index += 1
+	# Append the data from the rest of the participants for matb
+	for pIndex in range( 1, len( participantIds ) ):
+		index = 0
+		pId = participantIds[pIndex]
+		for trainIndex, testIndex in skfListMATB[ pIndex ]:
+			featuresTrain, featuresTest = features[pId]['matb'][trainIndex], features[pId]['matb'][testIndex]
+			labelsTrain, labelsTest = labels[pId]['matb'][trainIndex], labels[pId]['matb'][testIndex]
+			
+			combinedData[index][0] = vstack((combinedData[index][0], featuresTrain ))
+			combinedData[index][1] = hstack((combinedData[index][1], labelsTrain ))
+			combinedData[index][2] = vstack((combinedData[index][2], featuresTest ))
+			combinedData[index][3] = hstack((combinedData[index][3], labelsTest ))
+			
+			index += 1
+			
+	# Append the data from the participants for rantask
+	for pIndex in range( len( participantIds ) ):
+		index = 0
+		pId = participantIds[pIndex]
+		for trainIndex, testIndex in skfListRantask[ pIndex ]:
+			featuresTrain, featuresTest = features[pId]['rantask'][trainIndex], features[pId]['rantask'][testIndex]
+			labelsTrain, labelsTest = labels[pId]['rantask'][trainIndex], labels[pId]['rantask'][testIndex]
+			
+			combinedData[index][0] = vstack((combinedData[index][0], featuresTrain ))
+			combinedData[index][1] = hstack((combinedData[index][1], labelsTrain ))
+			combinedData[index][2] = vstack((combinedData[index][2], featuresTest ))
+			combinedData[index][3] = hstack((combinedData[index][3], labelsTest ))
+			
+			index += 1
 		
 	return combinedData
 
@@ -116,11 +136,14 @@ def tuneRFC( data, outputFilename ):
 	# Cast to numpy array and split
 	combinedFeatures = {}
 	combinedLabels = {}
-	
-	for task, tData in data.items():
-		npData = array( tData )
-		combinedFeatures[task] = npData[:,:-1].astype( np.float_ )
-		combinedLabels[task] = npData[:,-1]
+
+	for participant, pData in data.items():
+		combinedFeatures[participant] = {}
+		combinedLabels[participant] = {}
+		for task, tData in pData.items():
+			npData = array( tData )
+			combinedFeatures[participant][task] = npData[:,:-1].astype( np.float_ )
+			combinedLabels[participant][task] = npData[:,-1]
 	
 	# Perform data combination and 3Fold splitting once for all parameters
 	# to save on computations

@@ -15,7 +15,7 @@ from argparse import ArgumentParser
 from os import path, makedirs, walk
 from os.path import dirname, realpath, basename, normpath
 
-from numpy import array, argmax, zeros
+from numpy import array, argmax, zeros, hstack, vstack
 from sklearn import cross_validation
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score, classification_report
@@ -43,12 +43,10 @@ def main():
 	tasks = [ 'matb', 'rantask' ]
 	participantIds = [ '001', '002', '003', '004', '005', '006', '007' ]
 	
-	# Combine task data into one dataset per participant
-	combinedData = { '001':[], '002':[], '003':[], '004':[], '005':[], '006':[], '007':[] }
+	# Cut off first row header for each data set
 	for task in tasks:
 		for participantId in participantIds:
-			# Cut off the first row since it is the header
-			combinedData[participantId].extend( data[participantId][task][1:] )
+			data[participantId][task] = data[participantId][task][1:] 
 	
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
@@ -72,7 +70,54 @@ def main():
 	elapsed_time = time.time() - start_time
 	print( "Elapsed time: " + str(elapsed_time) )
 		
+def compileData( features, labels ):
+	"""
+		Create 3 fold cross validation data for each
+		task and then combine them into one dataset
+	"""
 	
+	# Sort keys to ensure they are in the same order every run
+	tasks = sorted(list(labels.keys()))
+	
+	# Create 3-fold cross validation indices for each task
+	skfList = []
+	for task in tasks:
+		skfList.append( cross_validation.StratifiedKFold( labels[task] ) )
+		
+	# Combine fold data. Outer list is one for each fold, 
+	# each fold contains four lists, training features, training labels
+	# testing features, testing labels 
+	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
+		
+	index = 0
+	# Add task 1 data to the combined list
+	task = tasks[0]
+	for trainIndex, testIndex in skfList[ 0 ]:
+		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
+		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
+		
+		combinedData[index][0] = featuresTrain
+		combinedData[index][1] = labelsTrain
+		combinedData[index][2] = featuresTest
+		combinedData[index][3] = labelsTest
+		
+		index += 1
+	
+	index = 0
+	# Add task 2 data to the combined list	
+	task = tasks[1]
+	for trainIndex, testIndex in skfList[ 1 ]:
+		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
+		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
+		
+		combinedData[index][0] = featuresTrain
+		combinedData[index][1] = labelsTrain
+		combinedData[index][2] = featuresTest
+		combinedData[index][3] = labelsTest
+		
+		index += 1
+		
+	return combinedData
 
 def tuneANN( data, outputFilename ):
 	"""
@@ -82,9 +127,17 @@ def tuneANN( data, outputFilename ):
 	"""
 	
 	# Cast to numpy array and split
-	npData = array( data )
-	features = npData[:,:-1].astype( np.float_ )
-	labels = npData[:,-1]
+	combinedFeatures = {}
+	combinedLabels = {}
+	
+	for task, tData in data.items():
+		npData = array( tData )
+		combinedFeatures[task] = npData[:,:-1].astype( np.float_ )
+		combinedLabels[task] = npData[:,-1]
+	
+	# Perform data combination and 3Fold splitting once for all parameters
+	# to save on computations
+	combinedData = compileData( combinedFeatures, combinedLabels )
 	
 	# Initialize max holder
 	bestModelPara = {}
@@ -97,7 +150,7 @@ def tuneANN( data, outputFilename ):
 	for connRate in connRates:
 		for hidNode in hidNodes:
 			for error in errors:
-				performance = trainAndEvaluateANN( features, labels, connRate,
+				performance = trainAndEvaluateANN( combinedData, connRate,
 					hidNode, error )
 				if performance[0] > bestModelPerf['accuracy']:
 					bestModelPara['connRate'] = connRate
@@ -111,7 +164,7 @@ def tuneANN( data, outputFilename ):
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
+def trainAndEvaluateANN( combinedData connRate, hidNodes, error ):
 	"""
 		Train and evaluate a neural network on the given features
 		with the given attributes. 3-fold cross-validation is used
@@ -119,8 +172,6 @@ def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 		of all three folds is returned. 
 	"""
 	
-	# Create 3-fold cross validation indices
-	skf = cross_validation.StratifiedKFold( labels )
 	binary = LabelBinarizer()
 	
 	accuracySum = 0
@@ -128,10 +179,12 @@ def trainAndEvaluateANN( features, labels, connRate, hidNodes, error ):
 	totalTargets = []
 	
 	# For each k-fold split
-	for trainIndex, testIndex in skf:
+	for split in combinedData:
+		
 		# Get data split
-		featuresTrain, featuresTest = features[trainIndex], features[testIndex]
-		labelsTrain, labelsTest = labels[trainIndex], labels[testIndex]
+		featuresTrain, featuresTest = split[0], split[2]
+		labelsTrain, labelsTest = split[1], split[3]
+		
 		
 		# Train the neural network
 		ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )

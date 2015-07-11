@@ -1,9 +1,9 @@
 #!/usr/local/bin/python3
 """
-	Filename: annBuilder_APST.py
+	Filename: annBuilder_APAT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate neural network models for the all participants, same 
-	task setup.
+	Generate neural network models for the all participants, all 
+	tasks setup.
 """
 import pickle
 import errno
@@ -15,7 +15,7 @@ from argparse import ArgumentParser
 from os import path, makedirs, walk
 from os.path import dirname, realpath, basename, normpath
 
-from numpy import array, argmax, zeros, vstack, hstack
+from numpy import array, argmax, zeros, hstack, vstack
 from sklearn import cross_validation
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score, classification_report
@@ -43,12 +43,10 @@ def main():
 	tasks = [ 'matb', 'rantask' ]
 	participantIds = [ '001', '002', '003', '004', '005', '006', '007' ]
 	
-	# Reorganize data for processing by the builder
-	combinedData = { 'matb':{}, 'rantask':{} }
+	# Cut off first row header for each data set
 	for task in tasks:
-		# Cut off the first row since it is the header
 		for participantId in participantIds:
-			combinedData[task][participantId] = data[participantId][task][1:]
+			data[participantId][task] = data[participantId][task][1:] 
 	
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
@@ -57,12 +55,10 @@ def main():
 	# for system processes )
 	pool = Pool( processes = 7 )
 	
-	# Build models for participants in a task
-	for task in tasks:
-		outputFilename = path.join( outputDirectory, task + '.txt' )
-		
-		# Spin off a process for the building
-		pool.apply_async( tuneANN, ( combinedData[task], outputFilename ) )
+	outputFilename = path.join( outputDirectory, 'all.txt' )
+	
+	# Spin off a process for the building
+	pool.apply_async( tuneANN, ( data, outputFilename) )
 			
 	# Close down the pool so that we can wait on all the processes
 	pool.close()
@@ -75,17 +71,21 @@ def main():
 def compileData( features, labels ):
 	"""
 		Create 3 fold cross validation data for each
-		participant and then combine them into one dataset
-	"""	
+		participant and each task and then combine them into one dataset
+	"""
 	
 	# Sort keys to ensure they are in the same order every run
 	participantIds = sorted(list(labels.keys()))
 	
-	# Create 3-fold cross validation indices for each participant
-	skfList = []
+	# Create 3-fold cross validation indices for each participant for matb
+	skfListMATB = []
 	for participantId in participantIds:
-		skfList.append( cross_validation.StratifiedKFold( labels[participantId] ) )
+		skfListMATB.append( cross_validation.StratifiedKFold( labels[participantId]['matb'] ) )
 		
+	# Create 3-fold cross validation indices for each participant for rantask
+	skfListRantask = []
+	for participantId in participantIds:
+		skfListRantask.append( cross_validation.StratifiedKFold( labels[participantId]['rantask'] ) )
 		
 	# Combine fold data. Outer list is one for each fold, 
 	# each fold contains four lists, training features, training labels
@@ -93,12 +93,12 @@ def compileData( features, labels ):
 	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
 		
 	
-	# Initialize the combinedData list with data from the first participant
+	# Initialize the combinedData list with data from the first participant for matb
 	index = 0
 	pId = participantIds[0]
-	for trainIndex, testIndex in skfList[ 0 ]:
-		featuresTrain, featuresTest = features[pId][trainIndex], features[pId][testIndex]
-		labelsTrain, labelsTest = labels[pId][trainIndex], labels[pId][testIndex]
+	for trainIndex, testIndex in skfListMATB[ 0 ]:
+		featuresTrain, featuresTest = features[pId]['matb'][trainIndex], features[pId]['matb'][testIndex]
+		labelsTrain, labelsTest = labels[pId]['matb'][trainIndex], labels[pId]['matb'][testIndex]
 		
 		combinedData[index][0] = featuresTrain
 		combinedData[index][1] = labelsTrain
@@ -107,15 +107,13 @@ def compileData( features, labels ):
 		
 		index += 1
 	
-	
-	# Append the data from the rest of the participants
+	# Append the data from the rest of the participants for matb
 	for pIndex in range( 1, len( participantIds ) ):
 		index = 0
 		pId = participantIds[pIndex]
-
-		for trainIndex, testIndex in skfList[ pIndex ]:
-			featuresTrain, featuresTest = features[pId][trainIndex], features[pId][testIndex]
-			labelsTrain, labelsTest = labels[pId][trainIndex], labels[pId][testIndex]
+		for trainIndex, testIndex in skfListMATB[ pIndex ]:
+			featuresTrain, featuresTest = features[pId]['matb'][trainIndex], features[pId]['matb'][testIndex]
+			labelsTrain, labelsTest = labels[pId]['matb'][trainIndex], labels[pId]['matb'][testIndex]
 			
 			combinedData[index][0] = vstack((combinedData[index][0], featuresTrain ))
 			combinedData[index][1] = hstack((combinedData[index][1], labelsTrain ))
@@ -123,7 +121,22 @@ def compileData( features, labels ):
 			combinedData[index][3] = hstack((combinedData[index][3], labelsTest ))
 			
 			index += 1
-	
+			
+	# Append the data from the participants for rantask
+	for pIndex in range( len( participantIds ) ):
+		index = 0
+		pId = participantIds[pIndex]
+		for trainIndex, testIndex in skfListRantask[ pIndex ]:
+			featuresTrain, featuresTest = features[pId]['rantask'][trainIndex], features[pId]['rantask'][testIndex]
+			labelsTrain, labelsTest = labels[pId]['rantask'][trainIndex], labels[pId]['rantask'][testIndex]
+			
+			combinedData[index][0] = vstack((combinedData[index][0], featuresTrain ))
+			combinedData[index][1] = hstack((combinedData[index][1], labelsTrain ))
+			combinedData[index][2] = vstack((combinedData[index][2], featuresTest ))
+			combinedData[index][3] = hstack((combinedData[index][3], labelsTest ))
+			
+			index += 1
+		
 	return combinedData
 
 def tuneANN( data, outputFilename ):
@@ -136,11 +149,14 @@ def tuneANN( data, outputFilename ):
 	# Cast to numpy array and split
 	combinedFeatures = {}
 	combinedLabels = {}
-	
+
 	for participant, pData in data.items():
-		npData = array( pData )
-		combinedFeatures[participant] = npData[:,:-1].astype( np.float_ )
-		combinedLabels[participant] = npData[:,-1]
+		combinedFeatures[participant] = {}
+		combinedLabels[participant] = {}
+		for task, tData in pData.items():
+			npData = array( tData )
+			combinedFeatures[participant][task] = npData[:,:-1].astype( np.float_ )
+			combinedLabels[participant][task] = npData[:,-1]
 	
 	# Perform data combination and 3Fold splitting once for all parameters
 	# to save on computations
@@ -171,7 +187,7 @@ def tuneANN( data, outputFilename ):
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateANN( combinedData, connRate, hidNodes, error ):
+def trainAndEvaluateANN( combinedData connRate, hidNodes, error ):
 	"""
 		Train and evaluate a neural network on the given features
 		with the given attributes. 3-fold cross-validation is used
@@ -191,6 +207,7 @@ def trainAndEvaluateANN( combinedData, connRate, hidNodes, error ):
 		# Get data split
 		featuresTrain, featuresTest = split[0], split[2]
 		labelsTrain, labelsTest = split[1], split[3]
+		
 		
 		# Train the neural network
 		ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )
