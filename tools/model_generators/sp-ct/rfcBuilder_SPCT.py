@@ -1,8 +1,8 @@
 #!/usr/local/bin/python3
 """
-	Filename: rfcBuilder_CPST.py
+	Filename: rfcBuilder_SPCT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate random forest classifier models for the cross participant, same 
+	Generate random forest classifier models for the same participant, cross 
 	task setup.
 """
 
@@ -53,7 +53,7 @@ def main():
 	# Build models for participants in a task
 	for task in tasks:
 		for participantId in participantIds:
-			outputFilename = path.join( outputDirectory, 'testingOn-' + participantId + '-' + task + '.txt' )
+			outputFilename = path.join( outputDirectory, participantId + '-testingOn-' + task + '.txt' )
 			
 			tuneRFC( splits[participantId][task], outputFilename )
 			
@@ -73,13 +73,9 @@ def performSplit( data ):
 	# For each participant to be tested on
 	for tParticipant in participants:
 		splits[tParticipant] = {}
-		for task in tasks:
-			splits[tParticipant][task] = { 'train':[], 'test':[]}
-			for participant in participants:
-				if participant != tParticipant:
-					splits[tParticipant][task]['train'].extend( data[participant][task] )
-				else:
-					splits[tParticipant][task]['test'].extend( data[participant][task] )
+		splits[tParticipant]['matb'] = { 'train':data[tParticipant]['rantask'], 'test':data[tParticipant]['matb']}
+		splits[tParticipant]['rantask'] = { 'train':data[tParticipant]['matb'], 'test':data[tParticipant]['rantask']}
+			
 					
 	return splits
 

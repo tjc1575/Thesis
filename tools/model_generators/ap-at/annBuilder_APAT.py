@@ -168,7 +168,7 @@ def tuneANN( data, outputFilename ):
 	
 	connRates = [ 0.7, 0.9, 1.0 ]
 	hidNodes = [ 72 , 60, 40 ]
-	errors = [ 0.01, 0.001, 0.0005 ]
+	errors = [ 0.01, 0.001 ]
 	
 	for connRate in connRates:
 		for hidNode in hidNodes:
@@ -187,7 +187,7 @@ def tuneANN( data, outputFilename ):
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateANN( combinedData connRate, hidNodes, error ):
+def trainAndEvaluateANN( combinedData, connRate, hidNodes, error ):
 	"""
 		Train and evaluate a neural network on the given features
 		with the given attributes. 3-fold cross-validation is used

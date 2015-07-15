@@ -1,9 +1,9 @@
 #!/usr/local/bin/python3
 """
-	Filename: annBuilder_SPAT.py
+	Filename: annBuilder_APCT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate neural network models for the same participants, all 
-	tasks setup.
+	Generate neural network models for the all participant, cross 
+	task setup.
 """
 import pickle
 import errno
@@ -15,7 +15,7 @@ from argparse import ArgumentParser
 from os import path, makedirs, walk
 from os.path import dirname, realpath, basename, normpath
 
-from numpy import array, argmax, zeros, hstack, vstack
+from numpy import array, argmax, zeros
 from sklearn import cross_validation
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score, classification_report
@@ -47,6 +47,8 @@ def main():
 	for task in tasks:
 		for participantId in participantIds:
 			data[participantId][task] = data[participantId][task][1:] 
+			
+	splits = performSplit( data )
 	
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
@@ -55,12 +57,12 @@ def main():
 	# for system processes )
 	pool = Pool( processes = 7 )
 	
-	# Build models for participants
-	for participantId in participantIds:
-		outputFilename = path.join( outputDirectory, participantId + '.txt' )
+	# Build models
+	for task in tasks:
+		outputFilename = path.join( outputDirectory, 'all-testingOn-' + task + '.txt' )
 		
 		# Spin off a process for the building
-		pool.apply_async( tuneANN, ( data[participantId], outputFilename ) )
+		pool.apply_async( tuneANN, ( splits[task], outputFilename ) )
 			
 	# Close down the pool so that we can wait on all the processes
 	pool.close()
@@ -70,54 +72,25 @@ def main():
 	elapsed_time = time.time() - start_time
 	print( "Elapsed time: " + str(elapsed_time) )
 		
-def compileData( features, labels ):
+def performSplit( data ):
 	"""
-		Create 3 fold cross validation data for each
-		task and then combine them into one dataset
-	"""
+		Perform data split, returning a list of training / test sets.
+	"""	
+	splits = {}
 	
-	# Sort keys to ensure they are in the same order every run
-	tasks = sorted(list(labels.keys()))
+	participants = sorted( list( data.keys() ) )
+	tasks = sorted( list( data[participants[0]].keys() ) )
 	
-	# Create 3-fold cross validation indices for each task
-	skfList = []
-	for task in tasks:
-		skfList.append( cross_validation.StratifiedKFold( labels[task] ) )
+	mergedData = { 'matb':[], 'rantask':[] }
+	# Merge participant data together
+	for tParticipant in participants:
+		mergedData['matb'].extend( data[tParticipant]['matb'] )
+		mergedData['rantask'].extend( data[tParticipant]['rantask'] )
 		
-	# Combine fold data. Outer list is one for each fold, 
-	# each fold contains four lists, training features, training labels
-	# testing features, testing labels 
-	combinedData = [ [ [], [], [], [] ], [ [], [], [], [] ], [ [], [], [], [] ] ]
-		
-	index = 0
-	# Add task 1 data to the combined list
-	task = tasks[0]
-	for trainIndex, testIndex in skfList[ 0 ]:
-		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
-		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
-		
-		combinedData[index][0] = featuresTrain
-		combinedData[index][1] = labelsTrain
-		combinedData[index][2] = featuresTest
-		combinedData[index][3] = labelsTest
-		
-		index += 1
-	
-	index = 0
-	# Add task 2 data to the combined list	
-	task = tasks[1]
-	for trainIndex, testIndex in skfList[ 1 ]:
-		featuresTrain, featuresTest = features[task][trainIndex], features[task][testIndex]
-		labelsTrain, labelsTest = labels[task][trainIndex], labels[task][testIndex]
-		
-		combinedData[index][0] = featuresTrain
-		combinedData[index][1] = labelsTrain
-		combinedData[index][2] = featuresTest
-		combinedData[index][3] = labelsTest
-		
-		index += 1
-		
-	return combinedData
+	splits['matb'] = { 'train':mergedData['rantask'], 'test':mergedData['matb']}
+	splits['rantask'] = { 'train':mergedData['matb'], 'test':mergedData['rantask']}
+					
+	return splits
 
 def tuneANN( data, outputFilename ):
 	"""
@@ -127,17 +100,13 @@ def tuneANN( data, outputFilename ):
 	"""
 	
 	# Cast to numpy array and split
-	combinedFeatures = {}
-	combinedLabels = {}
+	npDataTrain = array( data['train'] )
+	featuresTrain = npDataTrain[:,:-1].astype( np.float_ )
+	labelsTrain = npDataTrain[:,-1]
 	
-	for task, tData in data.items():
-		npData = array( tData )
-		combinedFeatures[task] = npData[:,:-1].astype( np.float_ )
-		combinedLabels[task] = npData[:,-1]
-	
-	# Perform data combination and 3Fold splitting once for all parameters
-	# to save on computations
-	combinedData = compileData( combinedFeatures, combinedLabels )
+	npDataTest = array( data['test'] )
+	featuresTest = npDataTest[:,:-1].astype( np.float_ )
+	labelsTest = npDataTest[:,-1]
 	
 	# Initialize max holder
 	bestModelPara = {}
@@ -145,12 +114,12 @@ def tuneANN( data, outputFilename ):
 	
 	connRates = [ 0.7, 0.9, 1.0 ]
 	hidNodes = [ 72 , 60, 40 ]
-	errors = [ 0.01, 0.001, 0.0005 ]
+	errors = [ 0.01, 0.001 ]
 	
 	for connRate in connRates:
 		for hidNode in hidNodes:
 			for error in errors:
-				performance = trainAndEvaluateANN( combinedData, connRate,
+				performance = trainAndEvaluateANN( featuresTrain, labelsTrain, featuresTest, labelsTest, connRate,
 					hidNode, error )
 				if performance[0] > bestModelPerf['accuracy']:
 					bestModelPara['connRate'] = connRate
@@ -164,11 +133,10 @@ def tuneANN( data, outputFilename ):
 	writeData( bestModelPara, bestModelPerf, outputFilename ) 					
 	
 
-def trainAndEvaluateANN( combinedData, connRate, hidNodes, error ):
+def trainAndEvaluateANN( featuresTrain, labelsTrain, featuresTest, labelsTest, connRate, hidNodes, error ):
 	"""
 		Train and evaluate a neural network on the given features
-		with the given attributes. 3-fold cross-validation is used
-		on each run, the average accuracy, precision, recall, and fmeasure
+		with the given attributes. The average accuracy, precision, recall, and fmeasure
 		of all three folds is returned. 
 	"""
 	
@@ -177,26 +145,18 @@ def trainAndEvaluateANN( combinedData, connRate, hidNodes, error ):
 	accuracySum = 0
 	totalResults = []
 	totalTargets = []
+		
+	# Train the neural network
+	ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )
 	
-	# For each k-fold split
-	for split in combinedData:
-		
-		# Get data split
-		featuresTrain, featuresTest = split[0], split[2]
-		labelsTrain, labelsTest = split[1], split[3]
-		
-		
-		# Train the neural network
-		ann = trainANN( featuresTrain, labelsTrain, connRate, hidNodes, error, binary )
-		
-		# Evaluate ANN on test data
-		accuracy, outputLabels = evaluateANN( featuresTest, labelsTest, ann, binary )
-		
-		accuracySum += accuracy
-		
-		# Store the results / targets for larger analysis
-		totalResults.extend( outputLabels.tolist() )
-		totalTargets.extend( labelsTest.tolist() )
+	# Evaluate ANN on test data
+	accuracy, outputLabels = evaluateANN( featuresTest, labelsTest, ann, binary )
+	
+	accuracySum += accuracy
+	
+	# Store the results / targets for larger analysis
+	totalResults.extend( outputLabels.tolist() )
+	totalTargets.extend( labelsTest.tolist() )
 		
 	# Generate performance report
 	report = classification_report( totalTargets, totalResults )
@@ -216,7 +176,7 @@ def trainANN( features, labels, connRate, hidNodes, error, binary ):
 	num_hidden = hidNodes
 	num_output = 3
 	desired_error = error
-	max_iterations = 200000
+	max_iterations = 100000
 	
 	# Print out two reports for every ANN
 	iterations_between_reports = 50000

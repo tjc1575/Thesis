@@ -117,7 +117,7 @@ def tuneANN( data, outputFilename ):
 	
 	connRates = [ 0.7, 0.9, 1.0 ]
 	hidNodes = [ 72 , 60, 40 ]
-	errors = [ 0.01, 0.001, 0.0005 ]
+	errors = [ 0.01 ]
 	
 	for connRate in connRates:
 		for hidNode in hidNodes:

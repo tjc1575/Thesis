@@ -1,8 +1,8 @@
 #!/usr/local/bin/python3
 """
-	Filename: rfcBuilder_CPST.py
+	Filename: rfcBuilder_CPCT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate random forest classifier models for the cross participant, same 
+	Generate random forest classifier models for the cross participant, cross 
 	task setup.
 """
 
@@ -54,7 +54,7 @@ def main():
 	for task in tasks:
 		for participantId in participantIds:
 			outputFilename = path.join( outputDirectory, 'testingOn-' + participantId + '-' + task + '.txt' )
-			
+		
 			tuneRFC( splits[participantId][task], outputFilename )
 			
 	# Calculate and print the elapsed time
@@ -68,19 +68,20 @@ def performSplit( data ):
 	splits = {}
 	
 	participants = sorted( list( data.keys() ) )
-	tasks = sorted( list( data[participants[0]].keys() ) )
 	
 	# For each participant to be tested on
 	for tParticipant in participants:
 		splits[tParticipant] = {}
-		for task in tasks:
-			splits[tParticipant][task] = { 'train':[], 'test':[]}
-			for participant in participants:
-				if participant != tParticipant:
-					splits[tParticipant][task]['train'].extend( data[participant][task] )
-				else:
-					splits[tParticipant][task]['test'].extend( data[participant][task] )
-					
+		splits[tParticipant]['matb'] = { 'train':[], 'test':[] }
+		splits[tParticipant]['rantask'] = { 'train':[], 'test':[] }
+		for participant in participants:
+			if participant != tParticipant:
+				splits[tParticipant]['matb']['train'].extend( data[participant]['rantask'] )
+				splits[tParticipant]['rantask']['train'].extend( data[participant]['matb'] )
+			else:
+				splits[tParticipant]['matb']['test'].extend( data[participant]['rantask'] )
+				splits[tParticipant]['rantask']['test'].extend( data[participant]['matb'] )
+				
 	return splits
 
 def tuneRFC( data, outputFilename ):

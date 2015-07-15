@@ -1,8 +1,8 @@
 #!/usr/local/bin/python3
 """
-	Filename: rfcBuilder_CPST.py
+	Filename: rfcBuilder_CPAT.py
 	Author: Taylor Carpenter <tjc1575@rit.edu>
-	Generate random forest classifier models for the cross participant, same 
+	Generate random forest classifier models for the cross participant, all 
 	task setup.
 """
 
@@ -50,12 +50,11 @@ def main():
 	# Record start time so that the elapsed time can be determined
 	start_time = time.time()
 	
-	# Build models for participants in a task
-	for task in tasks:
-		for participantId in participantIds:
-			outputFilename = path.join( outputDirectory, 'testingOn-' + participantId + '-' + task + '.txt' )
-			
-			tuneRFC( splits[participantId][task], outputFilename )
+	# Build models for participants
+	for participantId in participantIds:
+		outputFilename = path.join( outputDirectory, 'testingOn-' + participantId + '.txt' )
+		
+		tuneRFC( splits[participantId], outputFilename )
 			
 	# Calculate and print the elapsed time
 	elapsed_time = time.time() - start_time
@@ -68,18 +67,17 @@ def performSplit( data ):
 	splits = {}
 	
 	participants = sorted( list( data.keys() ) )
-	tasks = sorted( list( data[participants[0]].keys() ) )
 	
 	# For each participant to be tested on
 	for tParticipant in participants:
-		splits[tParticipant] = {}
-		for task in tasks:
-			splits[tParticipant][task] = { 'train':[], 'test':[]}
-			for participant in participants:
-				if participant != tParticipant:
-					splits[tParticipant][task]['train'].extend( data[participant][task] )
-				else:
-					splits[tParticipant][task]['test'].extend( data[participant][task] )
+		splits[tParticipant] = { 'train':[], 'test':[]}
+		for participant in participants:
+			if participant != tParticipant:
+				splits[tParticipant]['train'].extend( data[participant]['matb'] )
+				splits[tParticipant]['train'].extend( data[participant]['rantask'] )
+			else:
+				splits[tParticipant]['test'].extend( data[participant]['matb'] )
+				splits[tParticipant]['test'].extend( data[participant]['rantask'] )
 					
 	return splits
 
