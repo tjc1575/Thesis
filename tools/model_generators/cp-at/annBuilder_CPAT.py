@@ -83,12 +83,13 @@ def performSplit( data ):
 	# For each participant to be tested on
 	for tParticipant in participants:
 		splits[tParticipant] = { 'train':[], 'test':[]}
-		if participant != tParticipant:
-			splits[tParticipant]['train'].extend( data[participant]['matb'] )
-			splits[tParticipant]['train'].extend( data[participant]['rantask'] )
-		else:
-			splits[tParticipant]['test'].extend( data[participant]['matb'] )
-			splits[tParticipant]['test'].extend( data[participant]['rantask'] )
+		for participant in participants:
+			if participant != tParticipant:
+				splits[tParticipant]['train'].extend( data[participant]['matb'] )
+				splits[tParticipant]['train'].extend( data[participant]['rantask'] )
+			else:
+				splits[tParticipant]['test'].extend( data[participant]['matb'] )
+				splits[tParticipant]['test'].extend( data[participant]['rantask'] )
 					
 	return splits
 
@@ -176,7 +177,7 @@ def trainANN( features, labels, connRate, hidNodes, error, binary ):
 	num_hidden = hidNodes
 	num_output = 3
 	desired_error = error
-	max_iterations = 100000
+	max_iterations = 50000
 	
 	# Print out two reports for every ANN
 	iterations_between_reports = 50000

@@ -79,8 +79,8 @@ def performSplit( data ):
 				splits[tParticipant]['matb']['train'].extend( data[participant]['rantask'] )
 				splits[tParticipant]['rantask']['train'].extend( data[participant]['matb'] )
 			else:
-				splits[tParticipant]['matb']['test'].extend( data[participant]['rantask'] )
-				splits[tParticipant]['rantask']['test'].extend( data[participant]['matb'] )
+				splits[tParticipant]['matb']['test'].extend( data[participant]['matb'] )
+				splits[tParticipant]['rantask']['test'].extend( data[participant]['rantask'] )
 				
 	return splits
 

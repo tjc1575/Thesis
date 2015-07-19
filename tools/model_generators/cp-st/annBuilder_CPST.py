@@ -40,7 +40,7 @@ def main():
 	
 	data = pickle.load( open(inputFilename, 'rb') )
 	
-	tasks = [ 'matb', 'rantask' ]
+	tasks = [ 'rantask' ]
 	participantIds = [ '001', '002', '003', '004', '005', '006', '007' ]
 	
 	# Cut off first row header for each data set
@@ -179,7 +179,7 @@ def trainANN( features, labels, connRate, hidNodes, error, binary ):
 	num_hidden = hidNodes
 	num_output = 3
 	desired_error = error
-	max_iterations = 100000
+	max_iterations = 50000
 	
 	# Print out two reports for every ANN
 	iterations_between_reports = 50000
