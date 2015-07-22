@@ -17,6 +17,10 @@
 \usepackage{listings}
 \usepackage{appendix}
 
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\usepackage{standalone}
+
 \usepackage[T1]{fontenc}
 
 \bibliographystyle{ieeetr}
@@ -95,7 +99,6 @@ Rochester Institute of Technology\\Rochester, NY 14623 USA
 % What is the research area?	
 
 \section{Background}
-
 	\subsection{Terminology}
 	The following subsections layout the definitions that are used for various terminology that appears throughout this research. Some of the terms are commonly used in this area of research but have various meanings depending on the field and background from which the research originates. Other terms are being assigned unique meaning for the purposes of this research. For the sake of clarity, the major terms are explained explicitly, ideally removing confusion on how the terms are being used.
 	
@@ -149,9 +152,9 @@ A variety of different classifiers have been used in studies in an attempt to mo
 
 
 \section{Problem Statement}
-While many studies have focused on individualized models of cognitive workload using machine learning, few studies have produced results that are of use outside of a controlled lab setting. In a practical application, the training of a model to each individual for every task they may perform would be far too time consuming and costly. This research investigates the effectiveness of a generalized model of cognitive workload based on psychophysiological measures. Ideally the resulting model could be used outside of a controlled setting with automatic data processing and realtime classification.
+While many studies have focused on individualized models of cognitive workload using machine learning, few studies have produced results that are of use outside of a controlled lab setting. In a practical application, the training of a model to each individual for every task they may perform would be far too time consuming and costly. This research investigates the effectiveness of a generalized model of cognitive workload based on psychophysiological measures. In order for the model to be generalized, it should be robust against differences between individuals and between the tasks being performed. It should also be effective at handling novel individuals and tasks. Such a model may or may not be reasonably developed due to the complexity of the human mind. Ideally the resulting model could be used outside of a controlled setting with automatic data processing and realtime classification.
 
-The models were trained using the machine learning techniques of artificial neural networks and random forests and tested in a variety of configurations to determine their effectiveness. As is common in this type of study, data for experimentation was collected with sensors from subjects as they participated in cognitive loading tasks of varying difficulties. While no methods used would inhibit realtime analysis, the system focused on offline data. In order for the model to be generalized, it should be robust against differences between individuals and between the tasks being performed. It should also be effective at handling novel individuals and tasks. Such a model may or may not be reasonably developed due to the complexity of the human mind. The driving factor behind this work is usability in a real-world setting. As such, design decisions were made that favor low-cost, easy-to-use sensors with little to no empirical cleaning of data.  In the end, this research hopes to address the following hypothesis: a generalized model of cognitive workload can be trained using methods suitable for real-time classification without manual data processing that is more effective than random.
+A driving factor behind this work is usability in a real-world setting. As such, design decisions were made that favor low-cost, easy-to-use sensors with little to no empirical cleaning of data. The models were trained using the machine learning techniques of artificial neural networks and random forests and tested in a variety of configurations to determine their effectiveness. As is common in this type of study, data for experimentation was collected with sensors from subjects as they participated in cognitive loading tasks of varying difficulties. While no methods used would inhibit realtime analysis, the system focused on offline data.  In the end, this research hopes to address the following hypothesis: a generalized model of cognitive workload can be trained using methods suitable for real-time classification without manual data processing that is more effective than random.
 % How is this research different than existing research
 % What is the hypothesis that we are trying to solve?
 	\subsection{Applications}
@@ -163,11 +166,14 @@ The models were trained using the machine learning techniques of artificial neur
 		% Maintain ideal level of interaction between system and human
 		% Why is high workload bad?
 		% Why is low workload bad?
-		% Existing research related to adaptive automation 
+		% Existing research related to adaptive automation ( both from my previous class and from the other OFS detector work )
 		
 		\subsubsection{Research}
 		% Some tasks are easier to control workload than others
 		% Can increase understanding of difficult to control tasks
+		
+		%Currently analagous systems are used but are not always predictive
+			% Reference 'Workload Transition' for potential issues about cross-domain analysis
 
 \section{Study}
 A study was conducted in order to generate and collect the data needed to train the appropriate models. While some previous research~\cite{Wang_Z} has relied on the use of established and validated data collected from other experiments~\cite{Wilson_2010}, the amount of data required to adequately train artificial neural networks was not available. Consequently, a new study was required to generate the large amount of data that was necessary. The study consisted of two tasks, each with a leading baseline trial and three load conditions. The load condition trials were ten minutes long and the baseline trials were five minutes long. 
@@ -260,7 +266,7 @@ The following subsections describe each of the tasks as well as the overall layo
 		
 	\subsection{Structure} % Setup?
 	The study took place over four days for each participant. Each day required roughly an hour and a half from the participant. The time is approximate as it was dependent on how quickly the sensors were placed, which was, at times, delayed due to conditions such as hair. The first day consisted of an introduction to the system: what sensors were to be utilized, the intent of the study, and what was to be expected of the participant. Training was also conducted on each task to familiarize the participant with what was to be expected. Ideally, stable performance on both tasks was achieved for all participants as a result of training. Other studies~\cite{Wilson} have included lengthier training periods, however, due to time constraints, the time required for complete stability was not feasible. 
-	As such, the task performance results of each participant were recorded and examined and will be discussed later in this paper as a factor in the overall effectiveness of this study. 
+	As such, the task performance results of each participant were recorded and examined as a factor in the overall effectiveness of this study. 
 		
 	The second day marked the beginning of data collection for the participants. The participants were attached to the sensors and a five minute baseline recording using MATB was taken. Following the baseline, the participants each completed a ten minute MATB trial on the low-load condition. A NASA TLX survey was then administered to record the participants' rating of the task workload. Next, the participants completed a second, ten minute MATB trial on the low-load condition. This again was followed by a NASA TLX survey. Two TLX surveys were taken for each condition to evaluate the stability of the rating as participants should be recording similar ratings for both trials of a condition. After a ten minute break, the same procedure was repeated, including the baseline, substituting RanTask for MATB as the task being performed.
 	
@@ -272,7 +278,9 @@ The system that was created encompassed a full classification workflow. It cover
 In Figure~\ref{fig:system-overview} an overview of the entire system is shown. In the following subsections, the various components of the system will be discussed in detail. 
 \begin{figure}
 \centering
-
+\adjustbox{max width=\textwidth}{
+\includestandalone{figures/system_overview}
+}
 \caption[General Overview of Complete System Workflow]{A general overview of the entire system workflow.}
 \label{fig:system-overview}
 \end{figure} 
@@ -286,14 +294,14 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 		% Noise on either end requiring processing
 		
 		\subsubsection{Electroencephalogram (EEG)}
-		The electroencephalogram (EEG) monitor used is a wet-contact, wireless headset called the Emotiv EPOC+~\footnote{Emotiv EPOC+ product details available at \url{https://emotiv.com/epoc.php}}. The EEG monitor is a research grade headset with 14 individual data channels and two reference channels. Electrodes on the headset are located at the following placement sites as defined by the International 10-20 System for electrode placement~\cite{Jasper}: AF3, F7, F3, FC5, T7, P7, O1, O2, P8, T8, FC6, F4, F8, and AF4. Electrodes placed at P3 and P4 serve as references for the headset. The predecessor to this headset, which is very similar to the current headset, has been proven effective in many studies including work by Knoll et al.~\cite{Knoll}. The design of the headset allows for accurate placement of electrode over many trials and does not need an expert for proper setup through the presence of rubber guides that are placed on the mastoids of the participant. The use of a headset as opposed to stand-alone electrode contacts does lead to some issues regarding proper scalp contact with individuals having smaller-than-average skulls or large amounts of hair. Data collection software for the EEG headset allowed for monitoring of contact quality of the electrodes, ensuring proper readings were taken. Thanks to the work done by Estepp et al.~\cite{Estepp_2015}, it can be assured that the removal and replacement of electrodes between data collection trials had little to no effect on the quality of the measurements. The headset operates at a resolution of 128 samples per second. This high resolution resulted in more data and reduced the amount of variation caused by instantaneous noise.
+		The electroencephalogram (EEG) monitor used is a wet-contact, wireless headset called the Emotiv EPOC+~\footnote{Emotiv EPOC+ product details available at \url{https://emotiv.com/epoc.php}}. The EEG monitor is a research grade headset with 14 individual data channels and two reference channels. Electrodes on the headset are located at the following placement sites as defined by the International 10-20 System for electrode placement~\cite{Jasper}: AF3, F7, F3, FC5, T7, P7, O1, O2, P8, T8, FC6, F4, F8, and AF4. Electrodes placed at P3 and P4 serve as references for the headset. The predecessor to this headset, which is very similar to the current headset, has been proven effective in many studies including work by Knoll et al.~\cite{Knoll}. The design of the headset allows for accurate placement of electrodes over many trials and does not need an expert for proper setup due to the presence of rubber guides that are placed on the mastoids of the participant. The use of a headset as opposed to stand-alone electrode contacts does lead to some issues regarding proper scalp contact with individuals having smaller-than-average skulls or large amounts of hair. Data collection software for the EEG headset allowed for monitoring of contact quality of the electrodes, ensuring proper readings were taken. Thanks to the work done by Estepp et al.~\cite{Estepp_2015}, it can be assured that the removal and replacement of electrodes between data collection trials had little to no effect on the quality of the measurements. The headset operates at a resolution of 128 samples per second. This high resolution resulted in more data and reduced the amount of variation caused by instantaneous noise.
 		% How was EEG recorded?
 			% Headset specs
 		% Headset was cheaper than alternatives
 		% Headset required less expertise on placement
 			
-		\subsubsection{Heart Rate}
-		The heart rate monitor used was an optical, arm-based monitor called RHYTHM+ by Scosche~\footnote{RHYTHM+ product details available at \url{http://www.scosche.com/rhythm+}}. The monitor was designed for monitoring vitals during fitness training, not research, but it was sufficient for the heart rates of participants. At a resolution of four samples per second, much less data was collected for heart rate than EEG. This was not an issue, however, as heart rate change is gradual and unlikely to vary rapidly. An arm-based monitor was chosen as it was more comfortable and convenient to participants than a chest-strap monitor. The monitor communicated with the data recording computer through a protocol called ANT~\footnote{Additional information on the ANT protocol can be found at \url{http://www.thisisant.com}}, a protocol commonly used within fitness equipment.  The monitor can easily be adjusted and was unobtrusive enough to be worn for extended periods of time.
+		\subsubsection{Heart Rate (HR)}
+		The heart rate monitor used was an optical, arm-based monitor called RHYTHM+ by Scosche~\footnote{RHYTHM+ product details available at \url{http://www.scosche.com/rhythm+}}. The monitor was designed for collection of vitals during fitness training, not research, but it was sufficient for the monitoring of participants. At a resolution of four samples per second, much less data was collected for heart rate than EEG. This was not an issue, however, as heart rate change is gradual and unlikely to vary rapidly. An arm-based monitor was chosen as it was more comfortable and convenient to participants than a chest-strap monitor. The monitor communicated with the data recording computer through a protocol called ANT~\footnote{Additional information on the ANT protocol can be found at \url{http://www.thisisant.com}}, a protocol commonly used within fitness equipment.  The monitor can easily be adjusted and was unobtrusive enough to be worn for extended periods of time.
 		% How was heart rate recorded?
 			% Heart rate monitor specs
 		% Arm based was used as it is less intrusive
@@ -315,7 +323,9 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 			% partition each file into 5-second intervals
 		\begin{figure}
 		\centering
-
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{figures/eeg_preprocessing}
+		}
 		\caption[Overview of EEG Preprocessing Workflow]{An overview of the steps involved in the EEG preprocessing workflow.}
 		\label{fig:eeg-preprocessing}
 		\end{figure} 
@@ -328,7 +338,9 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 			% Partition data into 5-second intervals
 		\begin{figure}
 		\centering
-
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{figures/hr_preprocessing}
+		}
 		\caption{Overview of the heart rate preprocessing workflow.}
 		\label{fig:heart-preprocessing}
 		\end{figure} 
@@ -339,7 +351,9 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 	% Condition information gets labeled and added to one record
 	\begin{figure}
 	\centering
-
+	\adjustbox{max width=\textwidth}{
+	\includestandalone{figures/processing}
+	}
 	\caption{Overview of the processing and feature generation workflow.}
 	\label{fig:feature_generation}
 	\end{figure} 

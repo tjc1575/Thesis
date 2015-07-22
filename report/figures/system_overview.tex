@@ -1,0 +1,75 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+
+
+\begin{document}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, text width=2cm, draw=black, fill=blue!30]
+
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=2cm, draw=black, fill=orange!30]
+
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{tikzpicture}[node distance=2cm]
+
+\node (HR_Monitor) [startstop] {HR Monitor};
+\node (Raw_HR_Data) [io, below of=HR_Monitor, yshift=0.5cm] {Raw HR Data};
+
+\node(EEG_Monitor) [startstop, right of=HR_Monitor, xshift=5cm] {EEG Monitor};
+\node (Raw_EEG_Data) [io, below of=EEG_Monitor, yshift=0.5cm] {Raw EEG Data};
+
+\node (Preprocessing) [process, below right of=Raw_HR_Data, xshift=2cm] {Preprocessing};
+
+\node (Clean_HR_Data) [io, below left of=Preprocessing, xshift=-2cm, yshift=-0.5cm] {Partitioned HR Data};
+\node (Clean_EEG_Data) [io, below right of=Preprocessing, xshift=2cm, yshift=-0.5cm] {Partitioned EEG Channel Data};
+
+\node (Processing) [process, below right of=Clean_HR_Data, xshift=2cm, yshift=-1cm] {Processing \& Feature Generation};
+\node (Feature_Set) [io, below of=Processing, yshift=0.5cm] {Feature \\Set};
+
+
+\node (Testing_Sets) [io, below left of=Feature_Set, xshift=-2cm, yshift=-0.5cm] {Testing \\Sets};
+\node (Training_Sets) [io, below right of=Feature_Set, xshift=2cm, yshift=-0.5cm] {Training Sets};
+
+\node (Untrained_Model) [io, right of=Training_Sets, xshift = 2cm] {Untrained Models};
+\node (Model_Gen) [startstop, above of=Untrained_Model] {Model Generator};
+
+\node (Training) [process, below of=Training_Sets] {Training};
+
+\node (Trained_Models) [io, below of=Training, yshift=0.5cm] {Trained Models};
+
+\node (Evaluation) [process, below left of=Trained_Models, xshift=-2cm] {Evaluation};
+
+\node (Perf) [startstop, below of=Evaluation, yshift=0.5cm] {Model Performance Metrics};
+
+\draw [arrow] (HR_Monitor) -- (Raw_HR_Data);
+\draw [arrow] (EEG_Monitor) -- (Raw_EEG_Data);
+\draw [arrow] (Raw_HR_Data) |- (Preprocessing);
+\draw [arrow] (Raw_EEG_Data) |- (Preprocessing);
+
+\draw [arrow] (Preprocessing) -- (Clean_HR_Data);
+\draw [arrow] (Preprocessing) -- (Clean_EEG_Data);
+
+\draw [arrow] (Clean_HR_Data) -- (Processing);
+\draw [arrow] (Clean_EEG_Data) -- (Processing);
+
+\draw [arrow] (Processing) -- (Feature_Set);
+\draw [arrow] (Feature_Set) -- (Testing_Sets);
+\draw [arrow] (Feature_Set) -- (Training_Sets);
+
+\draw [arrow] (Model_Gen) -- (Untrained_Model);
+\draw [arrow] (Training_Sets) -- (Training);
+\draw [arrow] (Untrained_Model) |- (Training);
+
+\draw [arrow] (Training) -- (Trained_Models);
+
+\draw [arrow] (Testing_Sets) |- (Evaluation);
+\draw [arrow] (Trained_Models) |- (Evaluation);
+
+\draw [arrow] (Evaluation) -- (Perf);
+
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,17 @@
+Performance:
+	Accuracy: 0.127808988764
+
+             precision    recall  f1-score   support
+
+       high       0.34      0.48      0.40       476
+        low       0.53      0.63      0.58       475
+   moderate       0.10      0.04      0.06       473
+
+avg / total       0.32      0.38      0.34      1424
+
+
+
+Parameters:
+	Connection Rate: 1.0
+	Hidden Layer Nodes: 72
+	Desired Error Rate: 0.01

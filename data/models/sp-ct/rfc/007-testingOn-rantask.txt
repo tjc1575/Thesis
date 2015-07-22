@@ -1,0 +1,16 @@
+Performance:
+	Accuracy: 0.235818096578
+
+             precision    recall  f1-score   support
+
+       high       0.68      0.74      0.71       236
+        low       0.67      0.79      0.73       238
+   moderate       0.82      0.59      0.68       237
+
+avg / total       0.72      0.71      0.71       711
+
+
+
+Parameters:
+	Number of Trees: 150
+	Max Depth: 200
