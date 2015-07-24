@@ -164,7 +164,7 @@ def trainAndEvaluateANN( featuresTrain, labelsTrain, featuresTest, labelsTest, c
 	# Generate performance report
 	report = classification_report( totalTargets, totalResults )
 	
-	return ( accuracySum / 3.0, report )
+	return ( accuracySum, report )
 		
 		
 		

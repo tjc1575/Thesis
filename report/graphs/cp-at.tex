@@ -1,0 +1,70 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	ymajorgrids,
+	ytick={20,25,...,60},
+	xtick={1,2},
+	xticklabel style={align=center},
+	xticklabels={Random\\Forest, Neural\\Network},
+	title=Cross Participant - All Tasks, 
+	ylabel=Accuracy (\%)]
+
+	% Random Forest
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			32.70\\	23.14\\	23.08\\
+			31.03\\	33.17\\	31.02\\
+			26.82\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% ANN
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			41.33\\	30.92\\	33.21\\
+			38.34\\	51.57\\	46.89\\
+			41.08\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

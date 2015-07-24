@@ -1,5 +1,5 @@
 Performance:
-	Accuracy: 0.164644595243
+	Accuracy: .493933786
 
              precision    recall  f1-score   support
 

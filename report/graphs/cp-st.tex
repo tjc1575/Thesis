@@ -1,0 +1,95 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	ymajorgrids,
+	xtick={1,2,3,4},
+	xticklabel style={align=center},
+	xticklabels={RF\\MATB, RF\\RanTask, ANN\\MATB, ANN\\RanTask},
+	title=Cross Participant - Same Task, 
+	ylabel=Accuracy (\%)]
+
+	% Random Forest MATB
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			25.59\\	37.78\\	18.02\\
+			33.05\\	40.33\\	39.83\\
+			31.55\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% Random Forest RanTask
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			35.57\\	12.46\\	19.97\\
+			27.06\\	36.94\\	31.83\\
+			30.23\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% ANN MATB
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			32.34\\	57.02\\	30.28\\
+			42.89\\	55.28\\	50.28\\
+			38.56\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% ANN RanTask
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			36.69\\	14.56\\	25.31\\
+			39.13\\	44.57\\	47.32\\
+			43.60\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

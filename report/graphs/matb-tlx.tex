@@ -1,0 +1,83 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	ymajorgrids,
+	xtick={1,2,3},
+	xticklabel style={align=center},
+	xticklabels={Low, Moderate, High},
+	title=Participant NASA-TLX Workload - MATB, 
+	ylabel=Mean TLX Workload,
+	xlabel=Load Condition]
+
+	% Low
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			25.50\\	7.50\\	13.33\\
+			42.66\\	66.50\\	39.00\\
+			29.66\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% Moderate
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			49.50\\	25.33\\	46.00\\
+			57.16\\	70.00\\	47.83\\
+			50.66\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% High
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			75.83\\	54.50\\	89.33\\
+			68.50\\	80.50\\	74.50\\
+			67.33\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

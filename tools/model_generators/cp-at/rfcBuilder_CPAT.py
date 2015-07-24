@@ -151,7 +151,7 @@ def trainAndEvaluateRFC( featuresTrain, labelsTrain, featuresTest, labelsTest, n
 	# Generate performance report
 	report = classification_report( totalTargets, totalResults )
 	
-	return ( accuracySum / 3.0, report )
+	return ( accuracySum, report )
 		
 		
 		

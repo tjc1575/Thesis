@@ -16,16 +16,26 @@
 \usepackage{url}
 \usepackage{listings}
 \usepackage{appendix}
+\usepackage{caption}
+\usepackage{etoolbox}
 
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
 \usepackage{standalone}
+
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
 
 \usepackage[T1]{fontenc}
 
 \bibliographystyle{ieeetr}
 
 \graphicspath{{figures}}
+
+\newtoggle{label}
+\togglefalse{label}
+
 
 \lstset{
     basicstyle=\small,
@@ -97,18 +107,21 @@ Rochester Institute of Technology\\Rochester, NY 14623 USA
 \section{Introduction}
 % General introduction stuff
 % What is the research area?	
+% Overview of the whole thing essentially.
 
 \section{Background}
 	\subsection{Terminology}
-	The following subsections layout the definitions that are used for various terminology that appears throughout this research. Some of the terms are commonly used in this area of research but have various meanings depending on the field and background from which the research originates. Other terms are being assigned unique meaning for the purposes of this research. For the sake of clarity, the major terms are explained explicitly, ideally removing confusion on how the terms are being used.
+	The following subsections layout the definitions that are used for various terminology that appear throughout this research. Some of the terms are commonly used in this area of research but have various meanings, depending on the field and background from which the research originates. Other terms are being assigned unique meanings for the purposes of this research. For the sake of clarity, the major terms are explained explicitly, ideally removing confusion on how the terms are being used.
 	
 		\subsubsection{Cognitive Workload}
-		Many definitions exist for cognitive workload, as it is a theoretical concept that is intuitive to understand but difficult to fully encapsulate within a single statement. For the purposes of this research, the definition of cognitive workload is that proposed by Meshkati: ``mental workload [is] a multidimensional construct that reflects the interaction of such elements as task and system demands, operator processing capabilities and effort, subjective performance criteria, operator information processing behavior and strategies, and finally, operator training and prior experience''~\cite{Meshkati}. Since cognitive workload is a theoretical construct that exists in the mind, there are no methods of measuring the load directly. Instead, loading tasks can be used to affect workload while measurements, such as various psychophysiological readings, can be examined that allow for inferences to be made about cognitive workload.  With respect to this research, descriptions about measuring cognitive workload are in fact referring to the indirect measurement of factors affected by workload and making inferences about the underlying load. Another term commonly used in this line of research is ``operator function state'' or OFS. The definition of OFS used in this study is that put forth by Hockey: ``the variable capacity of the human operator for effective performance in response to task and environmental demands, and under the constraints imposed by cognitive and physiological processes that control and energize behavior''~\cite{Hockey}. In many applications, such as the current research and various other similar studies, cognitive workload and OFS can be seen as the same construct and used interchangeably. For the sake of clarity, cognitive workload is the term that is used throughout this research, although studies that are referenced herein may use the term OFS.
+		Many definitions exist for cognitive workload, as it is a theoretical concept that is intuitive to understand but difficult to fully encapsulate within a single statement. For the purposes of this research, the definition of cognitive workload is that proposed by Meshkati: ``mental workload [is] a multidimensional construct that reflects the interaction of such elements as task and system demands, operator processing capabilities and effort, subjective performance criteria, operator information processing behavior and strategies, and finally, operator training and prior experience''~\cite{Meshkati}. Since cognitive workload is a theoretical construct that exists in the mind, there are no methods of measuring it directly. Instead, loading tasks can be used to affect workload while measurements, such as psychophysiological readings, can be examined that allow for inferences to be made about cognitive workload.  With respect to this research, descriptions about measuring cognitive workload are in fact referring to the indirect measurement of factors affected by workload and making inferences about the underlying load. Another term commonly used in this line of research is ``operator functional state'' or OFS. The definition of OFS used in this study is that put forth by Hockey: ``the variable capacity of the human operator for effective performance in response to task and environmental demands, and under the constraints imposed by cognitive and physiological processes that control and energize behavior''~\cite{Hockey}. In many applications, such as the current research and various other similar studies, cognitive workload and OFS can be seen as the same construct and used interchangeably. For the sake of clarity, cognitive workload is the term that is used throughout this research, although studies that are referenced herein may use the term OFS.
 		
-		\subsubsection{Study}
-		Study, for the purposes of this research, refers to the data collection process that involved the help of participants. The end result of the study was the production of psychophysiological data that was then processed and analyzed as part of the remaining research.  When being used in reference to the work of other researches, however, study refers to the entire research process as reported in the cited writings.
+		\subsubsection{Participant Study}
+		% Change throughout document
+		Participant study, for the purposes of this research, refers to the data collection process that involved the help of participants. The end result of the participant study was the production of psychophysiological data that was then processed and analyzed as part of the remaining research. 
 		
 		\subsubsection{System}
+		% Another name?
 		In this research, system refers to the processes and Python scripts that acted on the data collected from the study. This includes everything from the preprocessing of sensor data to the training and evaluation of classification models. 		
 		
 		\subsubsection{Model / Classifier}
@@ -122,7 +135,7 @@ Rochester Institute of Technology\\Rochester, NY 14623 USA
 	% What is it?
 	% Current / previous research into workload
 
-	\subsection{Physiological Measures}
+	\subsection{Psychophysiological Measures}
 	% What measures have been used in this line of research?
 		% EEG
 		% HR
@@ -146,7 +159,7 @@ Rochester Institute of Technology\\Rochester, NY 14623 USA
 	% Pros / Cons
 
 \section{Related Work}
-Classifying cognitive workload has been the subject of many studies. The majority of studies have dealt with creating an individual model unique to each participant, with the study consisting of only one task. These studies commonly use EEG and heart rate as psychophysiological features~\cite{Wang_R, Zhang, Wilson, Yang}. While EEG data is consistently used in cognitive workload studies, the subsequent features generated from the data vary. Some of studies, such as the work performed by Wilson et al.~\cite{Wilson}, use log power spectrum information from the EEG measurements while other studies, such as that by Zhang et al.~\cite{Zhang}, use combinations of EEG power spectrum information, called task load indices. In addition to EEG and heart rate, some studies include blink rate~\cite{Wilson, Wilson_2002} and respiration rate~\cite{Wilson_2003} as features. Other studies used blinking and eye movement measures to correct artifacts in EEG data~\cite{Wang_R}. The general layout for each of the studies was roughly the same; participants were attached to a variety of sensors and then asked to perform a loading task at varying difficulty levels to induce different cognitive workloads. The two most common loading tasks used were MATB~\cite{Estepp} and AutoCAMS~\cite{Lorenz}. These systems are commonly used due to their ability to systematically vary the difficulty settings. 
+Classifying cognitive workload has been the subject of many studies. The majority of studies have dealt with creating an individual model unique to each participant, with the study consisting of only one task. These studies commonly use EEG and heart rate as psychophysiological features~\cite{Wang_R, Zhang, Wilson, Yang}. While EEG data is consistently used in cognitive workload studies, the subsequent features generated from the data vary. Some of studies, such as the work performed by Wilson et al.~\cite{Wilson}, use log power spectrum information from the EEG measurements while other studies, such as that by Zhang et al.~\cite{Zhang}, use combinations of EEG power spectrum information, called task load indices. In addition to EEG and heart rate, some studies include blink rate~\cite{Wilson, Wilson_2002} and respiration rate~\cite{Wilson_2003} as features. Other studies used blinking and eye movement measures to correct artifacts in EEG data~\cite{Wang_R}. The general layout for each of the studies was roughly the same; participants were attached to a variety of sensors and then asked to perform a loading task at varying difficulty levels to induce different cognitive workloads. The two most common loading tasks used were the Multi-Attribute Task Battery (MATB)~\cite{Comstock} and AutoCAMS~\cite{Lorenz}. These systems are commonly used due to their ability to systematically vary the difficulty settings. 
 
 A variety of different classifiers have been used in studies in an attempt to model cognitive workload. The study covered by Yang et al.~\cite{Yang} uses a system of fuzzy inference rules to perform realtime classification of cognitive workload for the purposes of adaptive automation triggering. An SVM Regressor was used by Ke et al.~\cite{Ke} to produce a cognitive workload index, a particular number corresponding to cognitive workload level. Another study~\cite{Wang_R} explored the use of an Adaptive-Network-based Fuzzy Inference System that was trained using differential evolution and ant colony search as a means of predicting levels of cognitive workload. Fuzzy C-Means clustering was used in a study~\cite{Zhang} as a means of classification through clustering. The study completed by Wilson et al.~\cite{Wilson} used an artificial neural network. All of these studies have shown adequate results but have failed to address the larger scope of generalizability. One study~\cite{Wang_Z} used a bayesian model to explore the ability of a model to be used on multiple subjects, learning from and tested on a dataset consisting of data from multiple participants. What the study lacked, however, was the ability to handle novel data; that is, classify on a participant that was previously unseen. A different study~\cite{Ke} falls in a similar category, however it deals with multiple tasks rather than multiple participants. The study involved testing on data from an unseen task,  showing the possibility for full generalization. An additional study~\cite{Christensen} demonstrated how cognitive workload metrics for a single individual can vary substantially across multiple days. This adds an additional challenge to generalizability as the model not only has to account for different subjects and tasks, but also the variation within subjects across multiple days.
 
@@ -157,10 +170,14 @@ While many studies have focused on individualized models of cognitive workload u
 A driving factor behind this work is usability in a real-world setting. As such, design decisions were made that favor low-cost, easy-to-use sensors with little to no empirical cleaning of data. The models were trained using the machine learning techniques of artificial neural networks and random forests and tested in a variety of configurations to determine their effectiveness. As is common in this type of study, data for experimentation was collected with sensors from subjects as they participated in cognitive loading tasks of varying difficulties. While no methods used would inhibit realtime analysis, the system focused on offline data.  In the end, this research hopes to address the following hypothesis: a generalized model of cognitive workload can be trained using methods suitable for real-time classification without manual data processing that is more effective than random.
 % How is this research different than existing research
 % What is the hypothesis that we are trying to solve?
+
 	\subsection{Applications}
+	A fully generalized model of cognitive workload would be of use in a variety of applications. In some instances it would simply improve on areas where cognitive workload models are already used but in other instances it would open the door to new research.
 	% Why is this research important?
 	
 		\subsubsection{Adaptive Automation}
+		One application in which cognitive workload models are already used in adaptive automation. Adaptive automation, as described by Byrne and Parasuraman, is automation in which the  ``assignment of tasks between the human operator and automation is dynamically adjusted based on task demands, user capabilities, and total system requirements to promote optimal system performance''~\cite{Byrne}. It has been found in previous studies that static automation, automation that is constant and which puts the operator in a state of monitoring for failures, can result in a deterioration of performance due to the strain of monitoring~\cite{Parasuraman_1993, Parasuraman_1997}. In adaptive automation, through the use of a cognitive workload model, the state of the operator can be monitored and the automation system adjusted accordingly to maintain the desired balance between manual and automatic control. A concept of an adaptive automation system using participant specific cognitive workload models has been done by Wilson, showing improvement in the overall task performance~\cite{Wilson_2005}. The addition of a generalized model of cognitive workload would greatly improve the flexibility of an adaptive automation system as it would eliminate the need for training on each individual user.
+		
 		% What is adaptive automation?
 		% How does a workload classifier interact with AA?
 		% Maintain ideal level of interaction between system and human
@@ -169,22 +186,23 @@ A driving factor behind this work is usability in a real-world setting. As such,
 		% Existing research related to adaptive automation ( both from my previous class and from the other OFS detector work )
 		
 		\subsubsection{Research}
+		While some tasks, such as the Multi-Attribute Task Battery (MATB)~\cite{Comstock} and AutoCAMS~\cite{Lorenz} were specifically developed to have control over the level of the load placed on the user, many other tasks can be much less predictable. Therefore, while it is possible to train individualized models of cognitive workload effectively on specialized laboratory tasks, it is unlikely that the same level of training could occur with more complicated tasks that are reflective of other real-world situations. In many cases, knowledge gained while studying one situation or task is used to make predictions and assumptions about another domain. It has been noted, however, that special care must be taken when dealing with analogous systems as the situations could be more different than they seem due to underlying complexity~\cite{Huey}. If a generalized model of cognitive workload were created that was effective independent of task, it could be trained on the specialized loading tasks, such as MATB, and then used in other domains to better research the workload of tasks, without the need for analogous systems and the danger of faulty comparisons.
 		% Some tasks are easier to control workload than others
 		% Can increase understanding of difficult to control tasks
 		
 		%Currently analagous systems are used but are not always predictive
 			% Reference 'Workload Transition' for potential issues about cross-domain analysis
 
-\section{Study}
-A study was conducted in order to generate and collect the data needed to train the appropriate models. While some previous research~\cite{Wang_Z} has relied on the use of established and validated data collected from other experiments~\cite{Wilson_2010}, the amount of data required to adequately train artificial neural networks was not available. Consequently, a new study was required to generate the large amount of data that was necessary. The study consisted of two tasks, each with a leading baseline trial and three load conditions. The load condition trials were ten minutes long and the baseline trials were five minutes long. 
+\section{Participant Study}
+A study was conducted in order to generate and collect the data needed to train the appropriate models. While some previous research~\cite{Wang_Z} has relied on the use of established and validated data collected from other experiments~\cite{Wilson_2010}, the amount of data required to adequately train artificial neural networks was not available. Consequently, a new study was required to generate the large amount of data that was necessary. The participant study consisted of two tasks, each with a leading baseline trial and three load conditions. The load condition trials were ten minutes long and the baseline trials were five minutes long. 
 The initial design of the study specified fifteen minute long trials but feedback from the pilot group suggested that at fifteen minutes, task fatigue started affecting performance.
 
 %% Transition?
 
-The study began with a total of ten college-aged participants, similar to existing works~\cite{Ting,Wang_R,Wilson_2010, Yin, Zhang}, however, due to complications, only seven participants completed the entire process. 
-Two of the removed participants were excluded due to misfitting of the EEG headset as well as discrepancies between the task difficulties reported versus the average difficulties reported by the other participants. The last removed participant was excluded due to personal issues preventing the completion of the study.
+The participant study began with a total of ten college-aged participants, similar to existing works~\cite{Ting,Wang_R,Wilson_2010, Yin, Zhang}, however, due to complications, only seven participants completed the entire process. 
+Two of the removed participants were excluded due to misfitting of the EEG headset as well as discrepancies between the task difficulties reported versus the average difficulties reported by the other participants. The last removed participant was excluded due to personal issues preventing the completion of the tasks.
 
-Of the seven participants that completed the study, the ages ranged from 18 to 23 years old, with an average age of 21.1 years. The gender ratio was balanced with three males and four females. Participants lacked any uncorrected hearing or visual impairments that would affect performance on the tasks of the study. 
+Of the seven participants that completed the participant study, the ages ranged from 18 to 23 years old, with an average age of 21.1 years. The gender ratio was balanced with three males and four females. Participants lacked any uncorrected hearing or visual impairments that would affect performance on the tasks of the study. 
 The following subsections describe each of the tasks as well as the overall layout of the study in its entirety.
 	
 	\subsection{Multi-Attribute Task Battery (MATB)}
@@ -207,6 +225,7 @@ The following subsections describe each of the tasks as well as the overall layo
 	
 	\begin{table}[]
 	\centering
+	\caption[Multi-Attribute Task Battery (MATB) Load Condition Parameters]{MATB Subtask Event Occurrences}
 	\adjustbox{max width=\textwidth}{
 	\begin{tabular}{llllllll}
 	\toprule
@@ -222,7 +241,7 @@ The following subsections describe each of the tasks as well as the overall layo
 	High & High & 30 & 12 & 110 & 120 & 40 & 20 \\ \bottomrule
 	\end{tabular}
 	}
-	\caption[Multi-Attribute Task Battery (MATB) Load Condition Parameters]{The parameter values specifying how many times an event should occur over the length of a trial, depending on load condition.}
+	
 	\label{tab:matb-params}
 	\end{table}
 	
@@ -234,6 +253,8 @@ The following subsections describe each of the tasks as well as the overall layo
 	
 	\begin{table}[]
 	\centering
+	\caption[RanTask Load Condition Tone Counts]{RanTask Desired Tone Counts}
+	
 	\adjustbox{max width=\textwidth}{
 	\begin{tabular}{llll}
 	\toprule
@@ -249,7 +270,7 @@ The following subsections describe each of the tasks as well as the overall layo
 	High & 2 & 2 & 3 \\ \bottomrule
 	\end{tabular}
 	}
-	\caption[RanTask Load Condition Tone Counts]{The RanTask desired counts of each tone for each load condition.}
+	
 	\label{tab:rantask-params}
 	\end{table}
 	
@@ -258,17 +279,17 @@ The following subsections describe each of the tasks as well as the overall layo
 	% Talk about the fact that a demo of the tones was presented before each trial?
 	
 	\subsection{NASA Task Load Index (TLX)}
-	The NASA Task Load Index (TLX) survey is a means of determining the workload for a given task based on participant responses~\cite{NASA}. The procedure allows for exploring the different aspects of a task and where the underlying cognitive workload originates. The workload rating obtained from participants through the TLX process was used to compare the subjective difficulties of the various tasks, similar to the procedure used in existing studies~\cite{Ke, Estepp_2015}. The current TLX procedure consists of six subscales: Mental Demands, Physical Demands, Temporal Demands, Own Performance, Effort, and Frustration. The Mental Demands subscale measures how much mental activity was required and its complexity. Physical Demands measures how much physical activity was required and how laborious it was. Temporal Demands measures how much time pressure was present in the task. In the Own Performance subscale, the participant remarks on how successful they felt they were and how satisfied they are with their performance. The Effort subscale measures how hard the participant had to work to accomplish the task. The final subscale, Frustration, measures how stressed or relaxed the participant felt during the task. 
+	The NASA Task Load Index (TLX) assessment is a means of determining the workload for a given task based on participant responses~\cite{NASA}. The procedure allows for exploring the different aspects of a task and where the underlying cognitive workload originates. The workload rating obtained from participants through the TLX process was used to compare the subjective difficulties of the various tasks, similar to the procedure used in existing studies~\cite{Ke, Estepp_2015}. The current TLX procedure consists of six subscales: Mental Demands, Physical Demands, Temporal Demands, Own Performance, Effort, and Frustration. The Mental Demands subscale measures how much mental activity was required and its complexity. Physical Demands measures how much physical activity was required and how laborious it was. Temporal Demands measures how much time pressure was present in the task. In the Own Performance subscale, the participant remarks on how successful they felt they were and how satisfied they are with their performance. The Effort subscale measures how hard the participant had to work to accomplish the task. The final subscale, Frustration, measures how stressed or relaxed the participant felt during the task. 
 	% Check tenses, do they make sense?
 	
-	Individual calibration was required from each participant for both of the tasks that were performed. During this calibration, the participant performed pair-wise comparisons between the TLX subscales, indicating which subscales had more effect on the overall workload of the task. The calibration was then used as a method of weighting the individual TLX survey responses for a trial. The idea behind the weighting is that a component that is calibrated as having a large impact on the overall workload should have its rating affect the overall workload metric more heavily. {\bf In addition to the weighting of individual trial ratings, the calibration also allows for comparisons between tasks in how they affect participants. }\emph{Only include this if it will be mentioned again later, such as in discussion.}
+	Individual calibration was required from each participant for both of the tasks that were performed. During this calibration, the participant performed pair-wise comparisons between the TLX subscales, indicating which subscales had more effect on the overall workload of the task. The calibration was then used as a method of weighting the individual TLX survey responses for a trial. The idea behind the weighting is that a component that is calibrated as having a large impact on the overall workload should have its rating affect the overall workload metric more heavily.
 	% Is the point of this clear?
 		
 	\subsection{Structure} % Setup?
 	The study took place over four days for each participant. Each day required roughly an hour and a half from the participant. The time is approximate as it was dependent on how quickly the sensors were placed, which was, at times, delayed due to conditions such as hair. The first day consisted of an introduction to the system: what sensors were to be utilized, the intent of the study, and what was to be expected of the participant. Training was also conducted on each task to familiarize the participant with what was to be expected. Ideally, stable performance on both tasks was achieved for all participants as a result of training. Other studies~\cite{Wilson} have included lengthier training periods, however, due to time constraints, the time required for complete stability was not feasible. 
 	As such, the task performance results of each participant were recorded and examined as a factor in the overall effectiveness of this study. 
 		
-	The second day marked the beginning of data collection for the participants. The participants were attached to the sensors and a five minute baseline recording using MATB was taken. Following the baseline, the participants each completed a ten minute MATB trial on the low-load condition. A NASA TLX survey was then administered to record the participants' rating of the task workload. Next, the participants completed a second, ten minute MATB trial on the low-load condition. This again was followed by a NASA TLX survey. Two TLX surveys were taken for each condition to evaluate the stability of the rating as participants should be recording similar ratings for both trials of a condition. After a ten minute break, the same procedure was repeated, including the baseline, substituting RanTask for MATB as the task being performed.
+	The second day marked the beginning of data collection for the participants. The participants were attached to the sensors and a five minute baseline recording using MATB was taken. Following the baseline, the participants each completed a ten minute MATB trial on the low-load condition. A NASA-TLX survey was then administered to record the participants' rating of the task workload. Next, the participants completed a second, ten minute MATB trial on the low-load condition. This again was followed by a NASA-TLX survey. Two TLX surveys were taken for each condition to evaluate the stability of the rating as participants should be recording similar ratings for both trials of a condition. After a ten minute break, the same procedure was repeated, including the baseline, substituting RanTask for MATB as the task being performed.
 	
 	The third and fourth days followed the same format as the second day. The third day consisted of the tasks being performed on the moderate-load condition while the fourth day consisted of the tasks being performed on the high-load condition. Each participant performed all their trials at similar times of day to reduce variations caused by circadian rhythm.The order in which the load conditions were presented follows that of a previous study~\cite{Wilson}. {\bf While the sensors were removed and replaced on multiple occasions as the data collection occurred over many days, which differs from some studies~\cite{Wilson, Ke, Zhang}, this should not have an effect on the overall validity of the data~\cite{Estepp_2015}}.\emph{Is this clear?}
 
@@ -307,13 +328,13 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 		% Arm based was used as it is less intrusive
 		
 	\subsection{Data Preprocessing}
-	The preprocessing of data files was necessary to transform the data logged from the sensors into a form that was more easily used to produce features. Rather than modifying the format in which the sensors logged the data, this step was used to extract the information useful for feature generation and write it out to multiple files. This step also encompassed cleaning of the data, addressing issues caused by communication between the sensors and receivers. Each participant trial was preprocessed independently and required no information that was not already contained within the trial data. The majority of the preprocessing for heart rate and EEG data was separate as is described in the following two subsections, however once the data had been cleaned, joint processing was required to properly align the times of the two datasets. As mentioned previously, the data files included leading and trailing noise that was not collected during the trial period itself. This data needed to be removed as it was not obtained under the load conditions and had no appropriate label. Part of the information that was logged during task trials was the start time of the trial. This time was used as a starting point when looking for a timestamp on the heart rate data that matched a timestamp in the EEG data. Once a time was found in which EEG and heart rate data existed that was after the start time of the trial, five-second intervals of data were taken until ten-minutes, the length of a trial, of data was processed. This not only removed the leading and trailing noise, it also synchronized the timing between the heart rate and EEG data so that the first five-second interval in the heart rate data corresponded to the first interval in the EEG data.
+	The preprocessing of data files was necessary to transform the data logged from the sensors into a form that was more easily used to produce features. Rather than modifying the format in which the sensors logged the data, this step was used to extract the information useful for feature generation and write it out to multiple files. This step also encompassed cleaning of the data, addressing issues caused by communication between the sensors and receivers. Each participant trial was preprocessed independently and required no information that was not already contained within the trial data. The majority of the preprocessing for heart rate and EEG data was separate, as is described in the following two subsections, however once the data had been cleaned, joint processing was required to properly align the times of the two datasets. As mentioned previously, the data files included leading and trailing noise that was not collected during the trial period itself. This data needed to be removed as it was not obtained under the load conditions and had no appropriate label. Part of the information that was logged during task trials was the start time of the trial. This time was used as a starting point when looking for a timestamp on the heart rate data that matched a timestamp in the EEG data. Once a time was found in which EEG and heart rate data existed that was after the start time of the trial, five-second intervals of data were taken until ten-minutes, the length of a trial, of data was processed. This not only removed the leading and trailing noise, it also synchronized the timing between the heart rate and EEG data so that the first five-second interval in the heart rate data corresponded to the first interval in the EEG data.
 	
 	The data was split into intervals in an attempt to reduce the effect of noise. The use of segmentation is common when dealing with psychophysiological data with a variety of segmentation conditions having been used in previous studies, ranging from two-second intervals with no overlap~\cite{Smith} to 40-second intervals with 35-seconds of overlap~\cite{Wang_Z}. An interval length of five-seconds, a length that has been used in a previous study~\cite{Yin}, was chosen as it is long enough to benefit from averaging and noise reduction but short enough that updates to the participant state are useful to other systems in an on-line manner. 
 	% Overview of what preprocessing had to be done
 	
 		\subsubsection{EEG}
-		The preprocessing of the EEG data involved multiple steps to transform the data from a single EDF file into multiple, separate channel text files. The process that was followed is outlined in Figure~\ref{fig:eeg-preprocessing}. The first step that was taken was using EEGLAB~\cite{EEGLAB}, an open-source MATLAB toolbox for processing EEG signals, to read the information out of the EDF file created by the sensor logging and separate the individual channel streams. A baseline removal process was performed using EEGLAB on each channel, where the baseline of a channel is defined as the mean value of the channel for the time period. Once the baseline was removed, each channel was written out to its own intermediate, tab-separated text file. The channel data was then partitioned into five-second intervals in the method previously described such that each interval falls within the time frame of the trial and aligns with the heart rate intervals. While partitions can have a differing number of data points, as miscommunication between the sensor and the receiver could result in dropped data points, each partition is the same length. Each channel is then, once again, written out to its own tab-separated text file. The advantage of multiple, intermediate text files is that modifications can be made to later portions of the workflow and applied without a complete reevaluation of earlier steps.
+		The preprocessing of the EEG data involved multiple steps to transform the data from a single EDF file into multiple, separate channel text files. The process that was followed is outlined in Figure~\ref{fig:eeg-preprocessing}. The first step using EEGLAB~\cite{EEGLAB}, an open-source MATLAB toolbox for processing EEG signals, to read the information out of the EDF file created by the sensor logging and to separate the individual channel streams. A baseline removal process was performed using EEGLAB on each channel, where the baseline of a channel is defined as the mean value of the channel for the time period. Once the baseline was removed, each channel was written out to its own intermediate, tab-separated text file. The channel data was then partitioned into five-second intervals in the method previously described such that each interval fell within the time frame of the trial and aligned with the heart rate intervals. Each channel is then, once again, written out to its own tab-separated text file. The advantage of multiple, intermediate text files is that modifications can be made to later portions of the workflow and applied without a complete reevaluation of earlier steps.
 		% Diagram of EEG preprocessing
 		% How was EEG preprocessed?
 			% EEG edf to plain text file
@@ -359,14 +380,14 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 	\end{figure} 
 	
 		\subsubsection{EEG}
-		The end goal of processing the EEG data was the production of band information resulting from the spectral power analysis of each channel.  The processing and feature generation was performed on each channel separated before the features were joined together into one record. The features for a channel were created through the application of a Fast Fourier Transform on each five-second interval of data. This transform produced power spectrum information of the EEG channel for the time interval. The bands used as features consisted of delta (1-3 Hz), theta (4-7 Hz), alpha (8-13 Hz), beta (14-30 Hz), and gamma (31-42 Hz). This are the same bands that were used in the work done by Wilson et al.~\cite{Wilson} as well as various other studies~\cite{Estepp_2015, Wilson_2012}. The band values were computed by summing the logarithm of the power spectrum values that corresponded to the frequencies in each band. {\bf The logarithm was taken to normalize the numbers and reduce unneeded precision.}.\emph{Trying to get across that the numbers were of different magnitiudes which did not matter, so the log was taken.} The five band values for each channel were then combined to produce the complete vector of 70 EEG features. It is important to note that no empirical noise reduction or artifact correction was done between the collection of EEG data to the creation of the features. While this modification would likely increase the effectiveness of the models and is indeed done in many other studies~\cite{Estepp_2015,Ting, Smith}, the driving factor behind this study was to have a system feasible for production, and an expert will not always be available to hand filter the data in a live system. 
+		The end goal of processing the EEG data was the production of band information resulting from the spectral power analysis of each channel.  The processing and feature generation was performed on each channel independently before the features were joined together into one record. The features for a channel were created through the application of a Fast Fourier Transform on each five-second interval of data. This transform produced power spectrum information of the EEG channel for the time interval. The bands used as features consisted of delta (1-3 Hz), theta (4-7 Hz), alpha (8-13 Hz), beta (14-30 Hz), and gamma (31-42 Hz). These are the same bands that were used in the work done by Wilson et al.~\cite{Wilson}, as well as various other studies~\cite{Estepp_2015, Wilson_2012}. The band values were computed by summing the logarithm of the power spectrum values that corresponded to the frequencies in each band. {\bf The logarithm was taken to normalize the numbers and reduce unneeded precision.}.\emph{Trying to get across that the numbers were of different magnitiudes which did not matter, so the log was taken.} The five band values for each channel were then combined to produce the complete vector of 70 EEG features. It is important to note that no empirical noise reduction or artifact correction was done between the collection of EEG data and the creation of the features. While this modification would likely increase the effectiveness of the models and is indeed done in many other studies~\cite{Estepp_2015,Ting, Smith}, the driving factor behind this study was to have a system feasible for production, and an expert will not always be available to hand filter the data in a live system. 
 		% Diagram of EEG processing
 		% How was EEG processed?
 			% FFT on each 5-second interval
 			% Logs of band sections taken and summed
 			
 		\subsubsection{Heart Rate}
-		The heart rate data contributes only two features to the overall feature vector. Before any features are generated, however, the mean heart rate of the baseline trial is removed from every data point. {\bf The idea here is that each participant likely has a different resting heart rate; removing the mean of the base heart rate will create offset readings that are caused by the load of the trial.} Since removing the mean heart rate could potentially create non-positive numbers and complicate further computations, a constant offset was added across all participants. This shift factor did not affect any patterns that may exist in the data but prevented calculation errors such as divide-by-zero. The first feature to be created from this modified data was the average heart rate for each five-second interval, calculated using mean. The second feature used was heart rate variation or HRV, the ratio between the standard deviation and mean of heart rate for the five-second time interval, similar to that used by Zhang et al.~\cite{Zhang}: \[HRV = \frac{\theta_{HRV}}{\mu_{HRV}}\] where \( \theta_{HRV} \) is the standard deviation and \( \mu_{HRV}\) is the mean of the HR data for a particular time segment.
+		The heart rate data contributed only two features to the overall feature vector. Before any features were generated, however, the mean heart rate of the baseline trial was removed from every data point. {\bf The idea here is that each participant likely has a different resting heart rate; removing the mean of the base heart rate will create offset readings that are caused by the load of the trial.} Since removing the mean heart rate could potentially create non-positive numbers and complicate further computations, a constant offset was added across all participants. This shift factor did not affect any patterns that may exist in the data but prevented calculation errors such as divide-by-zero. The first feature to be created from this modified data was the average heart rate for each five-second interval, calculated using mean. The second feature used was heart rate variation or HRV, the ratio between the standard deviation and mean of heart rate for the five-second time interval, similar to that used by Zhang et al.~\cite{Zhang}: \[HRV = \frac{\theta_{HRV}}{\mu_{HRV}}\] where \( \theta_{HRV} \) is the standard deviation and \( \mu_{HRV}\) is the mean of the HR data for a particular time segment.
 		% Diagram of HR processing
 		% How was HR processed?
 			% Removed baseline from each entry
@@ -374,43 +395,49 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 				
 		
 	\subsection{Configurations}
-	The feature vectors generated from the psychophysiological data was combined in a variety of ways to create different training and test dataset configuration. While the end goal was a model that was both participant- and task-independent, a number of benchmarks along the way provide additional information on the models' generalizability. Each component of a configuration has three possibilities: same, all, and cross. `Same' refers to being trained and tested on the same individual or task. This settings serves as a control, preventing the component from affecting the generalization. `All' refers to combining all the data from the participants or tasks to create both the training and test datasets. This setting explores the classifiers' ability to differentiate between the individual patterns or create a single pattern that is representative of all the participants of tasks. `Cross' refers to training on a subset of the participants or tasks and testing on the left out participant or task. This setting is the end goal of generalizability as it allows the model to be trained with a specified dataset and then used with a variety of novel participants and tasks. All training and testing dataset splits were stratified with respect load condition to ensure models could be adequately trained. Additionally, in any situation where both training and testing datasets were created from the same data, as is the case with `same' and `all' configurations, three-fold cross validation was used to ensure results were not dependent on anomalies in the specific data split.
+	The feature vectors generated from the psychophysiological data was combined in a variety of ways to create different training and test dataset configurations. While the end goal was a model that was both participant- and task-independent, a number of benchmarks along the way provided additional information on the models' generalizability. Each component of a configuration has three possibilities: same, all, and cross. `Same' refers to being trained and tested on the same individual or task. This setting serves as a control, preventing the component from affecting the generalization. `All' refers to combining all the data from the participants or tasks to create both the training and test datasets. This setting explores the classifiers' ability to differentiate between the individual patterns or create a single pattern that is representative of all the participants or tasks. `Cross' refers to training on a subset of the participants or tasks and testing on the remaining participant or task. This setting is the end goal of generalizability as it allows the model to be trained with a specified dataset and then used with a variety of novel participants and tasks. All training and testing dataset splits were stratified with respect to load condition to ensure models could be adequately trained. Additionally, in any situation where both training and testing datasets were created from the same data, as is the case with `same' and `all' configurations, three-fold cross validation was used to ensure results were not dependent on anomalies in the specific data split.
 	
 	The following subsections described each of the configurations that were explored in more detail. For convenience, a naming system in the style of acronyms has been created for referencing particular configurations; e.g. ``SP-ST'' refers to ``Same Participant - Same Task''.
 	% Each configuration talks about what it is supposed to cover, what configuration of train / test
 		
 		\subsubsection{Same Participant - Same Task (SP-ST)}
-		Each classifier was first trained and evaluated in a manner similar to previous studies~\cite{Wilson, Zhang, Wang_R, Yin}. This serves as a baseline to compare the overall performance of the models to those created in other studies. The main use of this configuration is in determining the effectiveness of the created features. As part of this configuration, the data for each participant on each task was used for both training and testing. This means the classifier was dependent on both the participant and the task. This configuration involves 14 classifiers per classification method, one for each task for each person.
+		Each classifier was first trained and evaluated in a manner similar to previous studies~\cite{Wilson, Zhang, Wang_R, Yin}. This served as a baseline to compare the overall performance of the models to those created in other studies. The main use of this configuration was in determining the effectiveness of the created features. As part of this configuration, the data for each participant on each task was used for both training and testing. This means the classifier was dependent on both the participant and the task. This configuration involves 14 classifiers per classification method, one for each task for each person.
 		 
 		\subsubsection{All Participants - Same Task (AP-ST)}
-		One step up in generalizability is the creation of a classifier that is trained on multiple subjects, similar to that of a previous study~\cite{Wang_Z}. The data for each participant for each task was split into training and testing subsets. The training and testing subsets for all participants on a particular task were then combined to create joint datasets. This explored the possibility of finding patterns in the data that match multiple participants, as opposed to a unique pattern for each participant. This configuration involves two classifiers per classification method, one for each task.
+		One step up in generalizability is the creation of a classifier that is trained on multiple subjects, similar to that of a previous study~\cite{Wang_Z}. The data for each participant for each task was split into training and testing subsets. The training and testing subsets for all participants on a particular task were then combined to create joint datasets. This explored the possibility of finding patterns in the data that match multiple participants, as opposed to a unique pattern for each participant. This configuration involved two classifiers per classification method, one for each task.
 		
 		\subsubsection{Same Participant - All Tasks (SP-AT)}
-		Another configuration that was explored is similar to the previous configuration, All Participant - Same Task, except the task data was merged, rather than the participant data. The configuration starts the same way as the previous two configurations, with the data for each participant, for each task being split into training and testing subsets. Then, the training and testing datasets for each task for a participant were combined. A total of seven classifiers for each classification method were trained for this configuration. This explored finding patterns that exist between the tasks, given a particular participant.
+		Another configuration that was explored is similar to the previous configuration, All Participant - Same Task, except the task data was merged, rather than the participant data. The configuration started the same way as the previous two configurations, with the data of each task for each participant being split into training and testing subsets. Then, the training and testing datasets for each task for a participant were combined. A total of seven classifiers for each classification method were trained for this configuration. This explored finding patterns that exist between the tasks, given a particular participant.
 		
 		\subsubsection{All Participants - All Tasks (AP-AT)}
-		The configuration of combined participants and combined tasks is another step up in generalizability. This configuration is a combination of the previous two configurations. In this configuration, all the data was split into training and testing subsets which are then combined across all participants and all tests. The models trained from this configuration explored increased generalizability over existing studies but did not explore the model's capabilities with completely novel data. Only a single classifier per classification method was necessary for this condition.
+		The configuration of combined participants and combined tasks is another step up in generalizability. This configuration is a combination of the previous two configurations. In this configuration, all the data was split into training and testing subsets which were then combined across all participants and all tests. The models trained from this configuration explored increased generalizability over existing studies but did not explore the model's capabilities with completely novel data. Only a single classifier per classification method was necessary for this condition.
 		
 		\subsubsection{Cross Participant - Same Task (CP-ST)}
-		This configuration was the first that dealt with true generalizability. For this configuration, the data for six of the participants for each of the tasks was combined to form the training set. The last participant served as the test set. Rather than differentiating between patterns previously seen, as the All Participants - Same Task configuration does, this configuration explored how well the patterns learned for a set of participants can generalize to novel data that may contain a distinct, and previously unseen pattern. This configuration resulted in 14 classifiers for each classification method, accounting for the two different task datasets and each participant being the unseen test data for a model.
+		This configuration is the first that deals with true generalizability. For this configuration, the data for six of the participants for each of the tasks was combined to form the training set. The last participant served as the test set. Rather than differentiating between patterns previously seen, as the All Participants - Same Task configuration does, this configuration explored how well the patterns learned for a set of participants can generalize to novel data that may contain a distinct, and previously unseen pattern. This configuration resulted in 14 classifiers for each classification method, accounting for the two different task datasets and each participant being the unseen test data for a model.
 		
 		\subsubsection{Same Participant - Cross Task (SP-CT)}
-		Another configuration that was explored is a variation of the previous configuration, substituting participant crossing with task crossing. In this configuration, each classifier was trained on the data for one task for a participant and tested of the data for the second task. This classifier explores how well the patterns discovered in one task generalize to a separate, unseen task. A total of 14 classifiers per classification method were created, allowing for each task to be the test data.
+		Another configuration that was explored is a variation of the previous configuration, substituting participant crossing with task crossing. In this configuration, each classifier was trained on the data for one task for a participant and tested of the data for the second task. This classifier explored how well the patterns discovered in one task generalize to a separate, unseen task. A total of 14 classifiers per classification method were created, allowing for each task to be the test data.
 		
 		\subsubsection{All Participant - Cross Task (AP-CT)}
-		One step down from complete generalization involves combining the previously described options, `all' and `cross'. This configuration involved combining the data for all participants, resulting in one dataset for each task. A single classifier was then created that was trained on the data for one task and tested on the second task. The configuration is similar to the previous configuration, but rather than a unique classifier for each participant, only one was created. This configuration is similar to a previous study~\cite{}. This explored the possibility of a general pattern being found for cognitive workload that can be used independent of task. The configuration resulted in two models per classification method.
+		One step down from complete generalization involves combining the previously described options, `all' and `cross'. This configuration involved combining the data for all participants, resulting in one dataset for each task. A single classifier was then created that was trained on the data for one task and tested on the second task. This configuration is similar to the previous configuration, but rather than a unique classifier for each participant, only one was created. This configuration is similar to a previous 
+		%------
+		study~\cite{Ke}. 
+		%-------
+		This explored the possibility of a general pattern being found for cognitive workload that can be used independent of task. The configuration resulted in two models per classification method.
 		
 		\subsubsection{Cross Participant - All Tasks (CP-AT)}
-		This configuration is similar to the previous configuration, however it explores the independence of participants instead of tasks. The configuration involved combining data for all tasks, resulting in seven datasets, one for each participant that included both tasks. A classifier was then trained on the data from six participant and tested on the last participant. After repeating the configuration to test on each participant, a total of 14 models were created.
+		This configuration is similar to the previous configuration, however it explored the independence of participants instead of tasks. The configuration involved combining data for all tasks, resulting in seven datasets, one for each participant that included both tasks. A classifier was then trained on the data from six participant and tested on the last participant. After repeating the configuration, to test on each participant, a total of 14 models were created.
 		
 		\subsubsection{Cross Participant - Cross Task (CP-CT)}
 		The final configuration represents complete generalizability. It explored the independence of both the participant and the task at the same time. The setup for this configuration involved training a classifier on the data of one task for six participants. The classifier was then tested on the data for the last participant performing the other task. To achieve full test coverage, this condition was repeated 14 times; once for each participant / task test combination.
 		
 		\subsubsection{Overview}
-		A large number of models were created to test different configurations of training and testing data. Table~\ref{tab:configuration} displays how many models were created for each configuration as well as the total number of models created. {\bf The table only shows the number of final models there are, during the training and tuning process many more models were created and evaluated. The table also only shows the number of models per classification method. The actual number of final models is twice what is shown in the table due to two classifier methods being evaluated.}\emph{Is this clear? Are the past 10 sections useful or just repetitive? How else can I present this information?}
+		% Be more clear on the number of intermediate models that were made
+		A large number of models were created to test different configurations of training and testing data. Table~\ref{tab:configuration} displays how many models were created for each configuration as well as the total number of models created. {\bf The table only shows the number of final models, during the training and tuning process many more models were created, evaluated, and discarded due to suboptimal accuracy rates. The table also only shows the number of models per classification method. The actual number of final models is twice what is shown in the table due to two classifier methods being evaluated.}\emph{Is this clear? Are the past 10 sections useful or just repetitive? How else can I present this information?}
 		
 		\begin{table}[]
 		\centering
+		\caption[Configuration Model Counts]{Model Counts Built Per Configuration}
 		\adjustbox{max width=\textwidth}{
 		\begin{tabular}{@{}lcccccccccc@{}}
 		\toprule
@@ -419,12 +446,14 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 		\begin{tabular}[c]{@{}l@{}}Number \\ of  models\end{tabular} & 14 & 2 & 7 & 1 & 14 & 14 & 2 & 7 & 14 & 75 \\ \bottomrule
 		\end{tabular}
 		}
-		\caption[Configuration Model Counts]{The number of models built per configuration and total number of models. These numbers are per classification method.}
 		\label{tab:configuration}
 		\end{table}
 		
 	\subsection{Classifiers}
 	Two classification methods were used in the training and evaluation of models, artificial neural networks and random forests. During the training process, a grid search was used to evaluate various combinations of input parameters and tune the model. Classification accuracy was used in determining which of the created models was most effective for a configuration. The following subsections detail what libraries were used in the creation of models as well as what parameters were used. 
+	% Talk about how models were tuned for each person / configuration.
+	
+	
 	% What classifiers are being created?
 	% talk about both RF and ANN
 	% Talk about training times
@@ -433,12 +462,12 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 	% What parameters are being tuned?
 
 		\subsubsection{Random Forest}
-		Ensemble classification methods, such as random forest, are not common in previous studies of this kind, even though they perform at least as well as other types of classifiers in most situations.The Scikit-Learn~\cite{Scikit} Python library was used for the training of random forest models as it is easy-to-use and can be parallelized effectively. Only two input parameters were tuned in the training of the models: tree depth and number of trees. There are many other parameters that could have been tuned but they have less of an effect on the overall accuracy and each additional parameter being tuned greatly increases the number of models to be trained and evaluated. The number of trees parameter was varied across the following values: 50, 100, 150, 300, 500, 750, 1000, 1500, and 2000. The number of trees parameter controls how many individual decision trees are present in the random forest model and allowed to vote for a classification. The more trees in a model, the more better the approximation of the sample space and any patterns that are contained within, however too many trees leads to a large training time and possible overfitting to the training data. The second parameter that was tuned was max tree depth, which was varied across the following values: 50, 100, 200, 300, 400, 500, 600, 700, and 800. This parameter controls how deep an individual tree in the model can go, i.e. how many branch points a tree can have. Too few branches and decisions are made without looking at enough information but too many branches and the model becomes either overfit to the training data or reliant on features that do not affect the classification. All other parameters that were not actively tuned were kept at the default values as defined by the Scikit-Learn library.
+		Ensemble classification methods, such as random forest, are not common in previous studies of this kind, even though they perform at least as well as other types of classifiers in most situations.The Scikit-Learn~\cite{Scikit} Python library was used for the training of random forest models as it is easy-to-use and can be parallelized effectively. Only two input parameters were tuned in the training of the models: tree depth and number of trees. There are many other parameters that could have been tuned but they have less of an effect on the overall accuracy and each additional parameter being tuned greatly increases the number of models to be trained and evaluated. The number of trees was varied across the following values: 50, 100, 150, 300, 500, 750, 1000, 1500, and 2000. The number of trees controls how many individual decision trees are present in the random forest model and allowed to vote for a classification. The more trees in a model, the more accurate the approximation of the sample space and any patterns that are contained within, however too many trees leads to a large training time and possible overfitting to the training data. The second parameter that was tuned was max tree depth, which was varied across the following values: 50, 100, 200, 300, 400, 500, 600, 700, and 800. This parameter controls how deep an individual tree in the model can go, i.e. how many branch points a tree can have. Too few branches and decisions are made without looking at enough information but too many branches and the model becomes either overfit to the training data or reliant on features that do not affect the classification. All other parameters that were not actively tuned were kept at the default values as defined by the Scikit-Learn library.
 		
 		\subsubsection{Artificial Neural Network}
 		Artificial neural networks have been proved in previous studies~\cite{Wilson, Estepp_2015} to be successful in classifying cognitive workload levels of single participants. This classification technique is now expanded to evaluate how effective it is at a generalized model. The ANN library used was the Fast Artificial Neural Network (FANN)~\cite{FANN} library with Python bindings. The library handled all components of the ANN model, from training and parameter setting to evaluation. As the training of ANN models is able to be parallelized easily, multiple models were trained simultaneously, each model training on a single core. This, as well as the nature of ANN training, resulted in models that took far longer to train than the corresponding random forest models.
 		
-		Artificial neural networks have a large number of parameters that can be changed to achieve different results. Due to the already lengthy amount of time required to train an ANN, the number of parameters that were tuned was kept to a minimum. A three layer neural network was used, having only a single hidden layer. The input layer contained 72 nodes, corresponding to the 72 features in the feature vectors. The output layer contained three nodes, each node representing one of the possible load condition classes. The number of nodes in the hidden layer was tuned from the following values: 72 , 60, and 40. Another parameter that was tuned was the connection rate between the nodes. Connection rates of 0.7, 0.9, and 1.0 were evaluated. The last parameter that was tuned was the desired error rate. In the initial configurations, values of 0.01, 0.001, and 0.0005 were evaluated, however this was removed and a value of 0.01 was used for the later configurations as the training time was high and none of the models were able to reach the desired error rate, meaning further training was not constructive. While the initial models were trained with a maximum of 100,000 iterations, the majority of the ANN models were trained with a maximum of 50,000 iterations as little improvement was seen between 50,000 and 100,000 iterations and it greatly reduced the amount of time spent training. The learning rate of the ANN models was not set as the FANN default training algorithm of RPROP~\cite{Riedmiller} was used, which does not rely on a learning rate.
+		Artificial neural networks have a large number of parameters that can be changed to achieve different results. Due to the already lengthy amount of time required to train an ANN, the number of parameters that were tuned was kept to a minimum. A three layer neural network was used, having only a single hidden layer. The input layer contained 72 nodes, corresponding to the 72 features in the feature vectors. The output layer contained three nodes, each node representing one of the possible load condition classes. The number of nodes in the hidden layer was tuned from the following values: 72 , 60, and 40. Another parameter that was tuned was the connection rate between the nodes. Connection rates of 0.7, 0.9, and 1.0 were evaluated. The last parameter that was tuned was the desired error rate. In the initial configurations, values of 0.01, 0.001, and 0.0005 were evaluated, however this was removed and a value of 0.01 was used for the later configurations as the training time was high and none of the models were able to reach the desired error rate, meaning further training was not constructive. While the initial models were trained with a maximum of 100,000 iterations, the majority of the ANN models were trained with a maximum of 50,000 iterations as little improvement was seen between 50,000 and 100,000 iterations and this decrease greatly reduced the amount of time spent training. The learning rate of the ANN models was not set as the FANN default training algorithm of RPROP~\cite{Riedmiller} was used, which does not rely on a learning rate.
 
 \section{Results}
 % What is the layout of this section?
@@ -450,10 +479,46 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 		\subsubsection{Performance}
 		% Tables and graphs of performance data
 		% Average performances etc.
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/matb-perf}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
-		\subsubsection{NASA Task Load Index ( TLX )}
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/rantask-perf}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
+		
+		
+		\subsubsection{NASA Task Load Index (TLX)}
 		% Tables and graphs of TLX data
 		% Average ratings etc.
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/matb-tlx}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
+		
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/rantask-tlx}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
+		
 		
 	\subsection{Classifier Models}
 	% Results of each of the configurations
@@ -462,32 +527,99 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 	
 		\subsubsection{Same Participant - Same Task (SP-ST)}
 		% Box graph of MATB and RanTask, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/sp-st}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{All Participants - Same Task (AP-ST)}
 		% Bar graph of MATB and RanTask, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/ap-st}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{Same Participant - All Tasks (SP-AT)}
 		% Box graph of both, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/sp-at}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{All Participants - All Tasks (AP-AT)}
 		
 		\subsubsection{Cross Participant - Same Task (CP-ST)}
 		% Box graph of MATB and RanTask, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/cp-st}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{Same Participant - Cross Task (SP-CT)}
 		% Box graph of both.
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/sp-ct}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{All Participant - Cross Task (AP-CT)}
 		% Bar graph of MATB and RanTask, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/ap-ct}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{Cross Participant - All Tasks (CP-AT)}
 		%Box graph, one for ANN and one for RF
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/cp-at}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 		
 		\subsubsection{Cross Participant - Cross Task (CP-CT)}
+		\begin{figure}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\includestandalone{graphs/cp-ct}
+		}
+		\caption{}
+		\label{fig:feature_generation}
+		\end{figure} 
 
 		
 \section{Discussion}
 % What is discussion going to cover?
+
+% Weighty insight into what the results show.
+% SHould be somewhat conclusiony
 
 	\subsection{Study}
 	% How effective was the study is doing what it was supposed to?
@@ -510,12 +642,10 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 	% Headset is sensitive to noise
 	% More tuning
 
-\section{Future Work}
+\section{Future Work \& Conclusion}
 % More similar tasks
 % More people
 % Different modeling methods
-	
-\section{Conclusion}
 % Was it successful / hypothesis proven?
 % Other comments on the overall outcome
 
@@ -534,12 +664,6 @@ In Figure~\ref{fig:system-overview} an overview of the entire system is shown. I
 \section{Model Performance}
 	\subsection{Artificial Neural Network}
 	\subsection{Random Forest}
-\section{Study Source Code}
-	\subsection{Performance Metrics}
-\section{System Source Code}
-	\subsection{Data Preprocessing}
-	\subsection{Data Processing / Feature Generation}
-	\subsection{Model Training}
 \end{appendices}	
 \end{document}
 

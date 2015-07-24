@@ -1,0 +1,84 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	ymajorgrids,
+	xtick={1,2,3},
+	ytick={40,50,...,90},
+	ymin=30,
+	xticklabel style={align=center},
+	xticklabels={Low, Moderate, High},
+	title=Participant Performance - RanTask, 
+	ylabel=Mean Performance (\%),
+	xlabel=Load Condition]
+	% Low
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			84.71\\	65.3\\	86.84\\
+			70.47\\	47.36\\	86.36\\	
+			80.55\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% Moderate
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			73.75\\	77.30\\	90.70\\
+			65.48\\	53.43\\	93.31\\	
+			71.79\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% High
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			42.82\\	45.92\\	41.70\\	
+			73.48\\	78.38\\	81.79\\	
+			71.62\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

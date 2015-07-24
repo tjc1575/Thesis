@@ -1,0 +1,63 @@
+\documentclass{standalone}[]
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	ymajorgrids,
+	yminorgrids,
+	ytick={0,10,...,100},
+	xtick={1,2,3,4},
+	xticklabel style={align=center},
+	xticklabels={RF\\R-M, RF\\M-R, ANN\\R-M, ANN\\M-R},
+	title=All Participants - Cross Task, 
+	ylabel=Accuracy (\%),
+	ymin=0,
+	ybar,
+	bar shift=0pt,
+	bar width=12pt,
+	\iftoggle{label}{
+		nodes near coords,    		nodes near coords align={vertical},
+	}{}
+	]
+	
+	\addplot+
+	 coordinates { 
+		(1,50.58) 
+		(2,49.39) 
+	};
+	
+	\addplot+
+	 coordinates { 
+		(3,53.43) 
+		(4,56.24) 
+	};
+	\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

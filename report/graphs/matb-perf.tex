@@ -1,0 +1,84 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	ymajorgrids,
+	xtick={1,2,3},
+	ytick={60,65,...,90},
+	xticklabel style={align=center},
+	xticklabels={Low, Moderate, High},
+	title=Participant Performance - MATB, 
+	ylabel=Mean Performance (\%),
+	xlabel=Load Condition]
+
+	% Low
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			76.31\\	65.69\\	82.70\\
+			73.15\\	87.93\\	76.20\\
+			81.77\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% Moderate
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			67.14\\	64.98\\	69.17\\
+			68.68\\	72.87\\	73.29\\
+			78.01\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+	% High
+	\addplot+[boxplot]
+		table[row sep=\\,y index=0] {
+		data\\
+			63.74\\	62.69\\	62.53\\
+			64.33\\	69.36\\	71.93\\
+			79.02\\
+}
+\iftoggle{label}{
+node[below] at  (boxplot box cs: \boxplotvalue{median},0.5)  {\pgfmathprintnumber{\boxplotvalue{median}}}
+}{}
+;
+
+\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
