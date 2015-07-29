@@ -1,0 +1,92 @@
+\documentclass{standalone}[]
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\usepackage{etoolbox}
+
+\newtoggle{label}
+\togglefalse{label}
+
+\pgfplotsset{compat=1.12}
+
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[
+	ymajorgrids,
+	scatter/classes= {
+		a={mark=*, black, fill=blue},
+		b={mark=square*, black, fill=red},
+		c={mark=triangle*, black, fill=brown},
+		d={mark=diamond*, black, fill=gray}
+	},
+	ymin=0,
+	ymax=100,
+	xmin = .5, 
+	xmax=4.5,
+	ytick={0,10,...,100},
+	xtick={1,2,3,4},
+	xticklabel style={align=center},
+	xticklabels={RF\\R-M, RF\\M-R, ANN\\R-M, ANN\\M-R},
+	title=All Participants - Cross Task, 
+	ylabel=Accuracy (\%)]
+	
+	\addplot+[ mark=None, dashed, black, line width = 1pt ]
+	coordinates {
+	(0, 33)
+	(5, 33)	
+};
+	
+	\addplot+[ scatter,
+			only marks,
+			scatter src=explicit symbolic]
+	 coordinates { 
+		(1,50.58) [a]
+		(2,49.39) [b]
+		(3,53.43) [c]
+		(4,56.24) [d]
+	};
+	
+	\addplot+[ mark=None, dashdotted, blue, line width = 1pt ] 
+	coordinates {
+		(0.75, 50.58)
+		(1.25, 50.58)
+};
+
+	\addplot+[ mark=None, dashdotted, red, line width = 1pt ] 
+	coordinates {
+		(1.75, 49.39)
+		(2.25, 49.39)
+};
+
+	\addplot+[ mark=None, dashdotted, brown, line width = 1pt ] 
+	coordinates {
+		(2.75, 53.43)
+		(3.25, 53.43)
+};
+
+	\addplot+[ mark=None, dashdotted, gray, line width = 1pt ] 
+	coordinates {
+		(3.75, 56.24)
+		(4.25, 56.24)
+};
+	\end{axis}\end{tikzpicture}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
