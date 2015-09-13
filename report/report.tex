@@ -47,6 +47,9 @@
 
 \onehalfspacing
 
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{E}}}
+
 \begin{document}
 \thispagestyle{empty}
 \begin{center}
@@ -200,10 +203,8 @@ A driving factor behind this work is usability in a real-world setting. As such,
 A study was conducted in order to generate and collect the data needed to train the appropriate models. While some previous research~\cite{Wang_Z} has relied on the use of established and validated data collected from other experiments~\cite{Wilson_2010}, the amount of data required to adequately train artificial neural networks was not available. Consequently, a new study was required to generate the large amount of data that was necessary. The participant study consisted of two tasks, each with a leading baseline trial and three load conditions. The load condition trials were ten minutes long and the baseline trials were five minutes long. 
 The initial design of the participant study specified fifteen minute long trials but feedback from the pilot group suggested that at fifteen minutes, task fatigue started affecting performance.
 
-%% Transition?
-
 The participant study began with a total of ten college-aged participants, similar to existing works~\cite{Ting,Wang_R,Wilson_2010, Yin, Zhang}, however, due to complications, only seven participants completed the entire process. 
-Two of the removed participants were excluded due to misfitting of the EEG headset as well as discrepancies between the task difficulties reported versus the average difficulties reported by the other participants. The last removed participant was excluded due to personal issues preventing the completion of the tasks.
+Two of the removed participants were excluded due to misfitting of the EEG headset as well as discrepancies between the task difficulties reported versus the average difficulties reported by the other participants. The last removed participant was excluded due to personal issues preventing the completion of the tasks. Additionally, one of the remaining seven participants completed only one trial of the low-workload RanTask condition, rather than the intended two trials, due to sensor and software issues.
 
 Of the seven participants that completed the participant study, the ages ranged from 18 to 23 years old, with an average age of 21.1 years. The gender ratio was balanced with three males and four females. Participants lacked any uncorrected hearing or visual impairments that would affect performance on the tasks of the study. 
 The following subsections describe each of the tasks as well as the overall layout of the participant study in its entirety.
@@ -306,7 +307,7 @@ In Figure~\ref{fig:system-overview} an overview of the entire classification sys
 \end{figure} 
 
 	\subsection{Sensors}
-	Data was collected through the use of two sensors, an EEG monitor and a heart rate monitor. The collection of psychophysiological data through EEG and heart rate monitors has been performed in numerous existing studies~\cite{Wilson, Yang, Wang_Z} and has been assessed~\cite{Sweller}. Following with the theme of practicality in a production system, the sensors used are more readily available than those used in other research settings. Data collection was structured such that there was one heart rate data file and one EEG data file per trial period, as opposed to recording multiple trials in a single file. As such, the data recording process was started shortly before and stopped shortly after each trial, resulting in a small amount of extraneous, noisy data preceding and trailing the trial data.
+	Data was collected through the use of two sensors, an EEG monitor and a heart rate monitor. The collection of psychophysiological data through EEG and heart rate monitors has been performed in numerous existing studies~\cite{Wilson, Yang, Wang_Z} and has been assessed and found to be valid~\cite{Sweller}. Following with the theme of practicality in a production system, the sensors used are more readily available than those used in other research settings. Data collection was structured such that there was one heart rate data file and one EEG data file per trial period, as opposed to recording multiple trials in a single file. As such, the data recording process was started shortly before and stopped shortly after each trial, resulting in a small amount of extraneous, noisy data preceding and trailing the trial data.
 		
 		\subsubsection{Electroencephalogram (EEG)}
 		The electroencephalogram (EEG) monitor used is a wet-contact, wireless headset called the Emotiv EPOC+~\footnote{Emotiv EPOC+ product details available at \url{https://emotiv.com/epoc.php}}. The EEG monitor is a research grade headset with 14 individual data channels and two reference channels. Electrodes on the headset are located at the following placement sites as defined by the International 10-20 System for electrode placement~\cite{Jasper}: AF3, F7, F3, FC5, T7, P7, O1, O2, P8, T8, FC6, F4, F8, and AF4. Electrodes placed at P3 and P4 serve as references for the headset. The predecessor to this headset, which is very similar to the current headset, has been proven effective in many studies including work by Knoll et al.~\cite{Knoll}. The design of the headset allows for accurate placement of electrodes over many trials and does not need an expert for proper setup due to the presence of rubber guides that are placed on the mastoids of the participant. The use of a headset as opposed to stand-alone electrode contacts does lead to some issues regarding proper scalp contact with individuals having smaller-than-average skulls or large amounts of hair. Data collection software for the EEG headset allowed for monitoring of contact quality of the electrodes, ensuring proper readings were taken. Thanks to the work done by Estepp et al.~\cite{Estepp_2015}, it can be assured that the removal and replacement of electrodes between data collection trials had little to no effect on the quality of the measurements. The headset operates at a resolution of 128 samples per second. This high resolution resulted in more data and reduced the amount of variation caused by instantaneous noise.
@@ -443,7 +444,7 @@ In Figure~\ref{fig:system-overview} an overview of the entire classification sys
 
 \section{Results}
 % What is the layout of this section?
-While the main focus of this study is the accuracy of the trained models, results from the participant study are also analyzed to provide insight into the effectiveness of the participant study during data generation. The results of participant performance and of reported subjective workload is first examined to determine to what degree the tasks were successful in inducing the desired workload. Then the accuracies of the trained models are examined to determine under which configurations the models were successful and if generalization occurred. 
+While the main focus of this study was the accuracy of the trained models, results from the participant study were also analyzed to provide insight into the effectiveness of the participant study for data generation. The results of participant performance and of reported subjective workload was first examined to determine to what degree the tasks were successful in inducing the desired workload. The learned models hold meaning only if the conditions under which the data was collected proves to be valid. Then, the accuracies of the trained models were examined to determine under which configurations the models were successful and if generalization occurred. 
 
 	\subsection{Participant Study}
 	% Why do the performance and TLX results matter?
@@ -452,6 +453,10 @@ While the main focus of this study is the accuracy of the trained models, result
 		\subsubsection{Performance}
 		% Tables and graphs of performance data
 		% Average performances etc.
+		The performance results of participants across the difficulty conditions and tasks were analyzed to evaluate the effectiveness of the study design. While participant performance on a task is not a direct indication of the cognitive workload associated with the task, it should be expected that, on average, performance decreases as difficulty and workload increase.  
+
+		The performance measurement for MATB was calculated as an average of the performance results of the four subtasks, to produce a score between 0 and 100. The tracking and resource management subtasks were scored based on the percentage of trial time spent in the desired range. A score was generated for the communications and system monitoring subtasks by subtracting the number of false positive responses from the number of true positives and dividing by the total number of targets. While this scoring methodology does not account for all aspects of the MATB simulation, it provides a general idea as to the participant's performance. Figure~\ref{fig:matb-perf} presents the performance scores achieved by each participant, organized by workload condition. The dotted lines represent the mean score for the condition. 
+		
 		\begin{figure}
 		\centering
 		\adjustbox{max width=\textwidth}{
@@ -460,6 +465,24 @@ While the main focus of this study is the accuracy of the trained models, result
 		\caption{}
 		\label{fig:matb-perf}
 		\end{figure} 
+		
+		Using MATB performance scores collected in the previously described manner, a one-way, between-subjects analysis of variance (ANOVA) was conducted to compare participant performance between the low-, moderate-, and high-workload conditions. There was a statistically significant effect of workload condition on participant performance, \(F(2, 39) = 10.32\), \(p = \num{2.5e-4}\). Post hoc comparisons were performed using the Tukey HSD test to further evaluate the scores and determine how the performance scores varied between conditions. The test indicated that the mean performance score for the low-workload condition (\(\mu = 77.68, \theta = 7.23\)) was significantly different than that of the moderate-workload condition (\(\mu = 70.59, \theta = 4.32\)) and that of the high-workload condition (\(\mu = 67.66, \theta = 6.08\)). It did not, however, show a significant difference between the moderate- and high-workload conditions. The result agrees with conclusions drawn from the MATB values shown in Table~\ref{tab:perf-diff}; the observed performance drop from the low-workload condition to the moderate-workload condition was more noticeable than the drop from the moderate-workload condition to the high-workload condition.
+		
+		\begin{table}[]
+		\caption[Performance Difference Between Conditions]{Mean Performance Difference Between Conditions}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\begin{tabular}{@{}lll@{}}
+		\toprule
+		Condition Change & MATB & RanTask \\ \midrule
+		Low to Moderate & \(7.08\pm 5.14\) & \(7.65\pm 2.82\) \\
+		Moderate to High & \(3.22\pm 1.78\) & \(22.27\pm 15.52\) \\ \bottomrule
+		\end{tabular}
+		}
+		\label{tab:perf-diff}
+		\end{table}
+		
+		Performance scores for the RanTask task were calculated by subtracting the number of false positive responses from the number of true positives and dividing by the total number of targets. This resulted in a score that represented the percentage of the targets that were responded to correctly, with a penalty for incorrect responses. The performance scores achieved by participants are presented in Figure~\ref{fig:rantask-perf}, organized by workload condition with the dotted lines representing the mean score for each condition.
 		
 		\begin{figure}
 		\centering
@@ -470,11 +493,14 @@ While the main focus of this study is the accuracy of the trained models, result
 		\label{fig:rantask-perf}
 		\end{figure} 
 		
-		
+		A one-way, between-subjects ANOVA was conducted on the RanTask performance scores to compare participant performance between the low-, moderate-, and high-workload conditions. There was a statistically significant effect of workload condition on participant performance, \(F(2, 38) = 3.29\), \(p=0.048\). Post hoc comparisons using the Tukey HSD test indicated that the mean performance score for the low-workload condition (\(\mu = 76.60, \theta = 15.67 \)) was not significantly different than that of the moderate-workload condition (\(\mu = 75.11, \theta = 15.02\)) or that of the high-workload condition (\(\mu = 62.24, \theta = 17.58\)). The test also indicated that there was no significant difference between the performance scores of the moderate- and high-workload conditions. The result deviates from the conclusions drawn from the RanTask values shown in Table~\ref{tab:perf-diff}; the observed performance from from the low-workload condition to the moderate-workload condition was minimal, however there does appear to be a substantial drop in performance from the moderate-workload condition to the high-workload condition, on average.
 		
 		\subsubsection{NASA Task Load Index (TLX)}
-		% Tables and graphs of TLX data
-		% Average ratings etc.
+		The results of the NASA Task Load Index assessments from participants across the difficulty conditions and tasks were analyzed as well to further evaluate the effectiveness of the study design. The TLX rating of a task is not a definitive indication of the cognitive workload associated with the task, however it is commonly accepted as a coarse, subjective measurement of the cognitive workload experienced by the participant.
+		
+		
+		The NASA TLX assessment results for each participant  for the MATB task are shown in Figure~\ref{fig:matb-tlx}, where they are organized by workload condition. The dotted lines represent the mean score for the condition. The TLX results shown have been adjusted using each participant's initial calibration for the MATB task. 
+		
 		\begin{figure}
 		\centering
 		\adjustbox{max width=\textwidth}{
@@ -483,6 +509,24 @@ While the main focus of this study is the accuracy of the trained models, result
 		\caption{}
 		\label{fig:matb-tlx}
 		\end{figure} 
+		
+		A one-way, between-subjects ANOVA was conducted on the MATB TLX scores to compare participant TLX ratings between the low-, moderate- and high-workload conditions. It was found that there was a statistically significant effect of workload condition on participant TLX rating, \(F(2,39) = 26.11\), \(p = \num{6.3e -8}\). Post hoc comparisons were performed using the Tukey HSD test. The test results indicated that the mean TLX rating for the low-workload condition (\(\mu = 32.02, \theta = 19.24\)) was significantly different than that of the moderate-workload condition (\(\mu = 49.50, \theta = 13.67\)) and that of the high-workload condition (\(\mu = 72.92, \theta = 10.96\)). The test results also indicated that there was a significant difference between the moderate- and high-workload conditions. These results agree with the conclusions drawn from the MATB values shown in Table~\ref{tab:tlx-diff}; there was a noticeable difference between all three conditions.
+		
+		\begin{table}[]
+		\caption[NASA-TLX Difference Between Conditions]{Mean NASA-TLX Difference Between Conditions}
+		\centering
+		\adjustbox{max width=\textwidth}{
+		\begin{tabular}{@{}lll@{}}
+		\toprule
+		Condition Change & MATB & RanTask \\ \midrule
+		Low to Moderate & \(17.47 \pm 8.98\) & \(13.78\pm 8.38\) \\
+		Moderate to High & \(23.48 \pm 10.73\) & \(24.14\pm 16.80\) \\ \bottomrule
+		\end{tabular}
+		}
+		\label{tab:tlx-diff}
+		\end{table}
+	
+		The RanTask NASA TLX assessment results for each participant are shown in Figure~\ref{fig:rantask-tlx}, where they are organized by workload condition. Like the previous graphs, the dotted lines represent the mean score for each condition. The TLX results have been adjusted using each participant's initial calibration for the RanTask task, and each participant completed two assessments for each condition.
 		
 		\begin{figure}
 		\centering
@@ -493,6 +537,7 @@ While the main focus of this study is the accuracy of the trained models, result
 		\label{fig:rantask-tlx}
 		\end{figure} 
 		
+		The RanTask TLX scores were assessed through a one-way, between subjects ANOVA to compare participant TLX ratings between the low-, moderate-, and high-workload conditions. It was found there was a statistically significant effect of workload condition on participant TLX rating, \(F(2,38) = 12.11\), \(p = \num{8.5e-5}\). Post hoc comparisons using the Tukey HSD test were performed to evaluate which conditions differed. The test results indicated that the mean TLX rating for the low-workload condition (\(\mu = 33.05, \theta = 23.68 \)) was not significantly different from that of the moderate-workload condition (\(\mu = 46.21, \theta = 20.52\)). It was found, however, that there was a significant difference between the low-workload condition and the high-workload condition (\(\mu = 68.64, \theta = 11.03\)), as well as between the moderate- and high-workload conditions. These results agree with the conclusions drawn from the RanTask values shown in Table~\ref{tab:tlx-diff}; there was a noticeable difference between the moderate- and high-workload conditions, but the low- and moderate-workload conditions were not as cleanly separated.
 		
 	\subsection{Classifier Models}
 	% Results of each of the configurations
@@ -600,33 +645,9 @@ a
 	\subsection{Participant Study}
 	% How effective was the study is doing what it was supposed to?
 	% Do the trends in the results look like expected?
-	\begin{table}[]
-		\caption[Performance Difference Between Conditions]{Mean Performance Difference Between Conditions}
-		\centering
-		\adjustbox{max width=\textwidth}{
-		\begin{tabular}{@{}lll@{}}
-		\toprule
-		Condition Change & MATB & RanTask \\ \midrule
-		Low to Moderate & 7.08 {\bf(5.14)} & 7.65 {\bf(2.82)} \\
-		Moderate to High & 3.22 {\bf(1.78)} & 22.27 {\bf(15.52)} \\ \bottomrule
-		\end{tabular}
-		}
-		\label{tab:perf-diff}
-	\end{table}
 	
-	\begin{table}[]
-		\caption[NASA-TLX Difference Between Conditions]{Mean NASA-TLX Difference Between Conditions}
-		\centering
-		\adjustbox{max width=\textwidth}{
-		\begin{tabular}{@{}lll@{}}
-		\toprule
-		Condition Change & MATB & RanTask \\ \midrule
-		Low to Moderate & 17.47 {\bf(8.98)} & 13.78 {\bf(8.38)} \\
-		Moderate to High & 23.48 {\bf(10.73)} & 24.14 {\bf(16.80)} \\ \bottomrule
-		\end{tabular}
-		}
-		\label{tab:tlx-diff}
-	\end{table}
+	
+	
 		
 	
 	\subsection{Classifier Models}
@@ -637,11 +658,11 @@ a
 		\begin{tabular}{@{}llllll@{}}
 		\toprule
                	& SP-ST         & AP-ST        & SP-AT        & AP-AT         & CP-ST         \\ \midrule
-		RF & 89.89 {\bf(6.20)}  & 77.83 {\bf(2.16)} & 88.72 {\bf(7.70)} & 77.03 {\bf( )}      & 30.01 {\bf(8.49)}  \\
-		ANN & 89.45 {\bf(6.90)}  & 68.68 {\bf(2.09)} & 91.19 {\bf(5.38)} & 66.57 {\bf( )}      & 39.84 {\bf(11.61)} \\ \toprule
+		RF & \(89.89\pm 6.20\)  & \(77.83\pm 2.16\) & \(88.72\pm 7.70\) & 77.03      & \(30.01\pm 8.49\)  \\
+		ANN & \(89.45\pm 6.90\)  & \(68.68\pm 2.09\) & \(91.19\pm 5.38\) & 66.57      & \(39.84\pm 11.61\) \\ \toprule
               	 & SP-CT         & AP-CT        & CP-AT        & CP-CT         &               \\ \midrule
-		RF  & 60.42 {\bf(16.69)} & 49.98 {\bf(0.84)} & 28.70 {\bf(4.33)} & 31.91 {\bf(10.61)} &               \\
-		ANN & 67.46 {\bf(13.75)} & 54.83 {\bf(1.98)} & 40.47 {\bf(7.23)} & 39.92 {\bf(10.46)} &               \\ \bottomrule
+		RF  & \(60.42\pm 16.69\) & \(49.98\pm 0.84\) & \(28.70\pm 4.33\) & \(31.91\pm 10.61\) &               \\
+		ANN & \(67.46\pm 13.75\) & \(54.83\pm 1.98\) & \(40.47\pm 7.23\) & \(39.92\pm 10.46\) &               \\ \bottomrule
 		\end{tabular}
 		}
 		\label{tab:model-accuracy}
