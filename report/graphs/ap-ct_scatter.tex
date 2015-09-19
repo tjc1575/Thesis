@@ -15,11 +15,13 @@
 \begin{tikzpicture}
 \begin{axis}[
 	ymajorgrids,
+	width=0.8\textwidth,
+	height=0.6\textwidth,
 	scatter/classes= {
-		a={mark=*, black, fill=blue},
-		b={mark=square*, black, fill=red},
-		c={mark=triangle*, black, fill=brown},
-		d={mark=diamond*, black, fill=gray}
+		a={mark=*, black, fill=blue, mark size=3},
+		b={mark=square*, black, fill=red, mark size=3},
+		c={mark=triangle*, black, fill=brown, mark size=3},
+		d={mark=diamond*, black, fill=gray, mark size=3}
 	},
 	ymin=0,
 	ymax=100,

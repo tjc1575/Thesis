@@ -15,9 +15,11 @@
 \begin{tikzpicture}
 \begin{axis}[
 	ymajorgrids,
+	width=0.8\textwidth,
+	height=0.6\textwidth,
 	scatter/classes= {
-		a={mark=*, fill=blue, draw=black},
-		b={mark=square*, fill=red, draw=black}
+		a={mark=*, fill=blue, draw=black, mark size=3},
+		b={mark=square*, fill=red, draw=black, mark size=3}
 	},
 	ymin=0,
 	ymax=100,
